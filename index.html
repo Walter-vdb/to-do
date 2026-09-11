@@ -344,19 +344,19 @@
         <circle id="startCircle" cx="30" cy="200" r="10" fill="#4CAF50" />
         <text id="startText" x="30" y="222" font-size="10" font-weight="bold" text-anchor="middle" fill="#2E7D32">START</text>
 
-        <!-- Custom Illustrated Finish Banner Arch -->
+        <!-- Clean Flat Finish Banner (Matching Reference Line Style) -->
         <g id="finishGroup" transform="translate(350, 10)">
-          <!-- Banner Container Shadow/Backdrop -->
-          <path d="M 2 8 C 18 4, 22 4, 38 8 L 38 38 C 22 34, 18 34, 2 38 Z" fill="#FFFFFF" stroke="#1D1D1F" stroke-width="2.5" stroke-linejoin="round"/>
-          <!-- Top Finish Header Block -->
-          <path d="M 3 8 C 18 4, 22 4, 37 8 L 37 20 C 22 16, 18 16, 3 20 Z" fill="#FFFFFF"/>
-          <!-- Red Stripe Feature -->
-          <path d="M 3 30 C 18 26, 22 26, 37 30 L 37 33 C 22 29, 18 29, 3 33 Z" fill="#E30613"/>
-          <!-- Text Label -->
-          <text x="20" y="16" font-family="Arial, sans-serif" font-size="7.5" font-weight="900" text-anchor="middle" fill="#E30613" letter-spacing="0.5">FINISH</text>
-          <!-- Side Pillars -->
-          <line x1="2" y1="8" x2="2" y2="42" stroke="#1D1D1F" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="38" y1="8" x2="38" y2="42" stroke="#1D1D1F" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Left & Right Vertical Posts -->
+          <line x1="2" y1="4" x2="2" y2="38" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>
+          <line x1="42" y1="4" x2="42" y2="38" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>
+          <!-- Bottom Footing Bars -->
+          <line x1="-2" y1="38" x2="6" y2="38" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>
+          <line x1="38" y1="38" x2="46" y2="38" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>
+          
+          <!-- Banner Card Fill -->
+          <rect x="2" y="8" width="40" height="18" rx="3" fill="#FFFFFF" stroke="#1D1D1F" stroke-width="2.5"/>
+          <!-- Bold FINISH Text -->
+          <text x="22" y="21" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" font-weight="900" text-anchor="middle" fill="#E30613" letter-spacing="0.8">FINISH</text>
         </g>
       </svg>
 
@@ -461,8 +461,8 @@
     startText.setAttribute('x', startPt.x);
     startText.setAttribute('y', Math.min(230, startPt.y + 22));
 
-    // Position Finish Arch centered at path destination
-    finishGroup.setAttribute('transform', `translate(${finishPt.x - 20}, ${finishPt.y - 28})`);
+    // Position Banner centered precisely at finish line destination
+    finishGroup.setAttribute('transform', `translate(${finishPt.x - 22}, ${finishPt.y - 20})`);
   }
 
   // Tasks Data
