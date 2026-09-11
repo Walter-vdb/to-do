@@ -15,7 +15,7 @@
       --border-color: #E5E5EA;
       
       /* Urgency Status Colors */
-      --overdue-red: #D97706; /* High alert border */
+      --overdue-red: #D97706;
       --overdue-bg: #FEF2F2;
       --overdue-text: #DC2626;
 
@@ -151,7 +151,6 @@
       gap: 16px;
     }
 
-    /* Compact Expandable Form */
     .add-task-form {
       display: flex;
       flex-direction: column;
@@ -243,13 +242,11 @@
       will-change: transform;
     }
 
-    /* Red Overdue Card */
     .task-item.status-overdue {
       background-color: var(--overdue-bg);
       border-color: var(--overdue-text);
     }
 
-    /* Yellow Due Soon Card (Within 1 Hour) */
     .task-item.status-duesoon {
       background-color: var(--due-soon-bg);
       border-color: var(--due-soon-border);
@@ -573,7 +570,6 @@
     localStorage.setItem('woom_notes', notesArea.value);
   });
 
-  // Calculate task urgency status
   function getTaskUrgency(task) {
     if (task.completed || !task.time) return { status: 'normal', minutesDiff: Infinity };
 
@@ -582,16 +578,26 @@
     const dueTime = new Date();
     dueTime.setHours(hours, minutes, 0, 0);
 
-    const diffMinutes = (now - dueTime) / (1000 * 60); // positive if overdue, negative if upcoming
+    const diffMinutes = (now - dueTime) / (1000 * 60);
 
     if (diffMinutes > 0) {
       return { status: 'overdue', minutesDiff: diffMinutes };
     } else if (diffMinutes >= -60) {
-      // Due within 60 minutes
       return { status: 'due-soon', minutesDiff: diffMinutes };
     } else {
       return { status: 'normal', minutesDiff: diffMinutes };
     }
+  }
+
+  // Helper function to format overdue time cleanly (e.g., "15m", "1h 15m", "2h")
+  function formatOverdueText(minutes) {
+    const totalMinutes = Math.floor(minutes);
+    if (totalMinutes < 60) {
+      return `${totalMinutes}m`;
+    }
+    const hrs = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`;
   }
 
   function saveAndRender() {
@@ -607,31 +613,23 @@
       if (id) oldPositions.set(id, el.getBoundingClientRect().top);
     });
 
-    // Custom Sorting Logic:
-    // 1. Uncompleted tasks first, completed tasks at the bottom
-    // 2. Overdue tasks at top (sorted by longest overdue first)
-    // 3. Due soon tasks next (within 1 hour)
-    // 4. Normal uncompleted tasks
     const sortedTasks = [...tasks].sort((a, b) => {
       if (a.completed !== b.completed) return a.completed ? 1 : -1;
-      if (a.completed) return 0; // maintain relative order for completed items
+      if (a.completed) return 0;
 
       const urgA = getTaskUrgency(a);
       const urgB = getTaskUrgency(b);
 
-      // Category priorities: overdue (1), due-soon (2), normal (3)
       const priorityMap = { 'overdue': 1, 'due-soon': 2, 'normal': 3 };
       const pA = priorityMap[urgA.status];
       const pB = priorityMap[urgB.status];
 
       if (pA !== pB) return pA - pB;
 
-      // If both are overdue, sort by longest overdue first (higher minutesDiff)
       if (urgA.status === 'overdue' && urgB.status === 'overdue') {
         return urgB.minutesDiff - urgA.minutesDiff;
       }
 
-      // If both are due soon, sort by earliest deadline first
       if (urgA.status === 'due-soon' && urgB.status === 'due-soon') {
         return urgB.minutesDiff - urgA.minutesDiff;
       }
@@ -650,8 +648,8 @@
       if (task.time && !task.completed) {
         if (urgency.status === 'overdue') {
           statusClass = 'status-overdue';
-          const minsAgo = Math.floor(urgency.minutesDiff);
-          timeLabel = `⚠️ Overdue by ${minsAgo}m (${task.time})`;
+          const formattedTime = formatOverdueText(urgency.minutesDiff);
+          timeLabel = `⚠️ Overdue by ${formattedTime} (${task.time})`;
         } else if (urgency.status === 'due-soon') {
           statusClass = 'status-duesoon';
           const minsLeft = Math.abs(Math.floor(urgency.minutesDiff));
@@ -680,7 +678,6 @@
       taskListEl.appendChild(li);
     });
 
-    // Apply FLIP smooth transition animation
     Array.from(taskListEl.children).forEach(el => {
       const id = el.dataset.id;
       const oldTop = oldPositions.get(id);
@@ -798,7 +795,6 @@
     setupDailyStage();
     saveAndRender();
     
-    // Check and update urgency every 15 seconds
     setInterval(() => {
       renderTasksWithAnimation();
     }, 15000);
