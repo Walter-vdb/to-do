@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tour de Workday</title>
+  <title>Tour de workday</title>
   <style>
     :root {
       --woom-red: #E30613;
@@ -45,7 +45,7 @@
       transition: max-width 0.3s ease;
     }
 
-    /* Desktop View */
+    /* Desktop Responsive Layout */
     @media (min-width: 800px) {
       .app-container {
         max-width: 880px;
@@ -54,6 +54,7 @@
       .main-layout {
         display: grid;
         grid-template-columns: 1fr 1fr;
+        gap: 0;
       }
 
       .content-left {
@@ -65,7 +66,7 @@
         order: 2;
         border-bottom: none !important;
         height: 100% !important;
-        min-height: 380px;
+        min-height: 400px;
       }
     }
 
@@ -111,7 +112,7 @@
     .map-container {
       position: relative;
       background: #E8F5E9;
-      height: 240px;
+      height: 250px;
       width: 100%;
       border-bottom: 2px solid var(--border-color);
       overflow: hidden;
@@ -135,7 +136,7 @@
       transform-origin: center center;
     }
 
-    /* Content & Left Panel */
+    /* Left Panel Content */
     .content-left {
       padding: 20px;
       display: flex;
@@ -177,13 +178,13 @@
       background: var(--woom-dark-red);
     }
 
-    /* Task List with Smooth Transition */
+    /* Task List Container with Smooth Movement */
     .task-list {
       list-style: none;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      max-height: 260px;
+      max-height: 280px;
       overflow-y: auto;
       position: relative;
     }
@@ -195,9 +196,8 @@
       padding: 12px 16px;
       background: var(--woom-gray-bg);
       border-radius: 12px;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      opacity: 1;
-      transform: translateY(0);
+      transition: transform 0.4s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.3s ease, background 0.2s ease;
+      will-change: transform, opacity;
     }
 
     .task-left {
@@ -218,6 +218,11 @@
       justify-content: center;
       background: white;
       transition: all 0.2s;
+    }
+
+    .task-item.completed {
+      background: #F2F2F7;
+      opacity: 0.75;
     }
 
     .task-item.completed .custom-checkbox {
@@ -274,7 +279,7 @@
       animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* Scratchpad Notes */
+    /* Quick Notes */
     .notes-container {
       padding: 16px 20px 20px 20px;
       border-top: 2px solid var(--border-color);
@@ -322,7 +327,7 @@
 <div class="app-container">
   <header>
     <div class="header-top">
-      <h1>Tour de Workday</h1>
+      <h1>Tour de workday</h1>
       <div class="badge" id="progressText">0 / 0 Done</div>
     </div>
     <div class="stage-subtitle" id="stageTitle">Loading Stage...</div>
@@ -330,22 +335,60 @@
 
   <div class="main-layout">
     
-    <!-- Right Panel: Scenery & Map -->
-    <div class="map-container" id="mapContainer">
+    <!-- Interactive Map with Scenery & Fans -->
+    <div class="map-container">
       <svg class="map-svg" viewBox="0 0 400 240" preserveAspectRatio="none">
-        <!-- Dynamic Nature Elements -->
-        <g id="sceneryGroup"></g>
-
-        <!-- Road Path -->
-        <path id="roadPath" d="" fill="none" stroke="#757575" stroke-width="22" stroke-linecap="round"/>
-        <path id="roadLine" d="" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="6,6" stroke-linecap="round"/>
         
-        <!-- Markers -->
-        <circle id="startCircle" cx="0" cy="0" r="10" fill="#4CAF50" />
-        <text id="startText" x="0" y="0" font-size="10" font-weight="bold" text-anchor="middle" fill="#2E7D32">START</text>
+        <!-- Scenery: Trees -->
+        <g id="sceneryTrees">
+          <path d="M 60,80 L 70,55 L 80,80 Z" fill="#2E7D32"/>
+          <rect x="68" y="80" width="4" height="8" fill="#4E342E"/>
 
-        <circle id="finishCircle" cx="0" cy="0" r="12" fill="#E30613" />
-        <text id="finishText" x="0" y="0" font-size="11" font-weight="bold" text-anchor="middle" fill="#E30613">FINISH 🏁</text>
+          <path d="M 140,45 L 150,20 L 160,45 Z" fill="#388E3C"/>
+          <rect x="148" y="45" width="4" height="8" fill="#4E342E"/>
+
+          <path d="M 310,130 L 320,105 L 330,130 Z" fill="#2E7D32"/>
+          <rect x="318" y="130" width="4" height="8" fill="#4E342E"/>
+
+          <path d="M 230,210 L 240,185 L 250,210 Z" fill="#4CAF50"/>
+          <rect x="238" y="210" width="4" height="8" fill="#4E342E"/>
+        </g>
+
+        <!-- Scenery: Spectators & woom Banners -->
+        <g id="spectators">
+          <!-- Spectator 1 -->
+          <circle cx="105" cy="115" r="4" fill="#FFB74D"/>
+          <rect x="103" y="119" width="4" height="8" fill="#E30613"/>
+
+          <!-- Spectator 2 with cheering arm -->
+          <circle cx="115" cy="112" r="4" fill="#FFCC80"/>
+          <rect x="113" y="116" width="4" height="8" fill="#1976D2"/>
+          <line x1="117" y1="117" x2="122" y2="110" stroke="#FFCC80" stroke-width="2"/>
+
+          <!-- Spectator 3 -->
+          <circle cx="280" cy="85" r="4" fill="#FFE0B2"/>
+          <rect x="278" y="89" width="4" height="8" fill="#388E3C"/>
+
+          <!-- woom Cheering Banner -->
+          <rect x="170" y="15" width="60" height="18" rx="4" fill="#E30613"/>
+          <text x="200" y="28" font-size="9" font-weight="900" font-style="italic" text-anchor="middle" fill="#FFFFFF">WOOM!</text>
+
+          <!-- woom WOW Speech Bubble -->
+          <path d="M 290,140 Q 305,130 320,140 Q 305,155 290,140" fill="#FFFFFF" stroke="#E30613" stroke-width="1.5"/>
+          <text x="305" y="143" font-size="8" font-weight="900" text-anchor="middle" fill="#E30613">WOW!</text>
+        </g>
+
+        <!-- Road Track -->
+        <path id="roadPath" d="M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" 
+              fill="none" stroke="#757575" stroke-width="22" stroke-linecap="round"/>
+        <path id="roadLine" d="M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" 
+              fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="6,6" stroke-linecap="round"/>
+        
+        <circle id="startCircle" cx="30" cy="200" r="10" fill="#4CAF50" />
+        <text id="startText" x="30" y="222" font-size="10" font-weight="bold" text-anchor="middle" fill="#2E7D32">START</text>
+
+        <circle id="finishCircle" cx="370" cy="40" r="12" fill="#E30613" />
+        <text id="finishText" x="370" y="24" font-size="11" font-weight="bold" text-anchor="middle" fill="#E30613">FINISH 🏁</text>
       </svg>
 
       <!-- Bike Graphic -->
@@ -379,7 +422,7 @@
       </div>
     </div>
 
-    <!-- Left Panel: Tasks -->
+    <!-- Left Panel -->
     <div class="content-left">
       <div class="victory-card" id="victoryCard">
         🎉 Stage Complete! Excellent riding today! 🚲
@@ -395,6 +438,7 @@
 
   </div>
 
+  <!-- Bottom Section: Quick Notes -->
   <div class="notes-container">
     <div class="notes-header">
       <span>📝 Quick Workday Notes</span>
@@ -405,118 +449,21 @@
 </div>
 
 <script>
-  // Daily Stages with Themed Scenery SVG Elements
+  // Daily Stage Routes
   const stageRoutes = [
-    { 
-      day: "Sunday", 
-      name: "Sunday Stage: Lake & Countryside Cruise", 
-      path: "M 30,190 C 130,190 130,50 200,50 C 270,50 270,180 370,180",
-      bg: "#E1F5FE",
-      scenery: `
-        <!-- Lake -->
-        <path d="M 120,90 Q 200,120 280,90 Q 200,180 120,90 Z" fill="#81D4FA" opacity="0.8"/>
-        <!-- Sailboat -->
-        <path d="M 190,120 L 200,105 L 205,120 Z" fill="#FFFFFF"/>
-        <!-- Trees -->
-        <circle cx="60" cy="140" r="16" fill="#81C784"/>
-        <circle cx="340" cy="130" r="18" fill="#66BB6A"/>
-      `
-    },
-    { 
-      day: "Monday", 
-      name: "Monday Stage: The Weekly Kickoff S-Curve", 
-      path: "M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40",
-      bg: "#E8F5E9",
-      scenery: `
-        <!-- Rolling Hills -->
-        <path d="M 0,240 Q 120,100 240,240 Z" fill="#C8E6C9"/>
-        <path d="M 180,240 Q 300,80 400,240 Z" fill="#A5D6A7"/>
-        <!-- Pine Trees -->
-        <polygon points="80,130 70,150 90,150" fill="#2E7D32"/>
-        <polygon points="320,80 310,105 330,105" fill="#2E7D32"/>
-      `
-    },
-    { 
-      day: "Tuesday", 
-      name: "Tuesday Stage: Forest Ridge Ride", 
-      path: "M 30,180 C 100,180 140,50 220,150 C 280,210 320,60 370,60",
-      bg: "#F1F8E9",
-      scenery: `
-        <!-- Forest Grove -->
-        <circle cx="100" cy="90" r="22" fill="#4CAF50"/>
-        <circle cx="130" cy="80" r="26" fill="#388E3C"/>
-        <circle cx="280" cy="120" r="20" fill="#4CAF50"/>
-        <!-- Little Pond -->
-        <ellipse cx="200" cy="200" rx="40" ry="20" fill="#80DEEA"/>
-      `
-    },
-    { 
-      day: "Wednesday", 
-      name: "Wednesday Stage: Midweek Mountain Loop", 
-      path: "M 30,170 C 100,220 120,130 200,130 C 280,130 300,220 370,100",
-      bg: "#ECEFF1",
-      scenery: `
-        <!-- Mountain Range Background -->
-        <polygon points="40,240 120,70 200,240" fill="#CFD8DC"/>
-        <polygon points="110,70 120,70 125,85 105,85" fill="#FFFFFF"/>
-        <polygon points="200,240 280,40 360,240" fill="#B0BEC5"/>
-        <polygon points="270,40 280,40 290,60 265,60" fill="#FFFFFF"/>
-      `
-    },
-    { 
-      day: "Thursday", 
-      name: "Thursday Stage: Countryside Windmill Route", 
-      path: "M 30,80 C 130,180 180,40 270,170 C 330,220 350,70 370,60",
-      bg: "#FFFDE7",
-      scenery: `
-        <!-- Farmland Fields -->
-        <path d="M 0,160 Q 200,240 400,160 L 400,240 L 0,240 Z" fill="#FFF59D" opacity="0.6"/>
-        <!-- Windmill Silhouette -->
-        <rect x="220" y="60" width="12" height="30" fill="#795548"/>
-        <line x1="226" y1="65" x2="210" y2="50" stroke="#5D4037" stroke-width="2"/>
-        <line x1="226" y1="65" x2="242" y2="80" stroke="#5D4037" stroke-width="2"/>
-        <line x1="226" y1="65" x2="210" y2="80" stroke="#5D4037" stroke-width="2"/>
-        <line x1="226" y1="65" x2="242" y2="50" stroke="#5D4037" stroke-width="2"/>
-      `
-    },
-    { 
-      day: "Friday", 
-      name: "Friday Stage: The Weekend Coastline Sprint", 
-      path: "M 30,170 C 110,170 170,120 230,120 C 290,120 320,60 370,60",
-      bg: "#E0F7FA",
-      scenery: `
-        <!-- Ocean Waves (Right Side) -->
-        <path d="M 180,240 C 260,180 320,240 400,180 L 400,240 Z" fill="#4FC3F7"/>
-        <path d="M 220,240 C 290,200 340,240 400,210 L 400,240 Z" fill="#0288D1"/>
-        <!-- Sandy Beach Border -->
-        <path d="M 150,240 C 230,160 300,220 400,150" stroke="#FFE082" stroke-width="18" fill="none"/>
-        <!-- Palm Tree -->
-        <path d="M 80,170 Q 75,130 90,110" stroke="#8D6E63" stroke-width="4" fill="none"/>
-        <circle cx="85" cy="105" r="12" fill="#2E7D32"/>
-      `
-    },
-    { 
-      day: "Saturday", 
-      name: "Saturday Stage: Weekend Trail Adventure", 
-      path: "M 30,150 Q 120,220 200,120 T 370,90",
-      bg: "#F3E5F5",
-      scenery: `
-        <!-- Hills -->
-        <path d="M 0,240 Q 150,120 300,240 Z" fill="#E1BEE7"/>
-        <!-- Flowers -->
-        <circle cx="70" cy="190" r="4" fill="#E91E63"/>
-        <circle cx="120" cy="200" r="4" fill="#FFEB3B"/>
-        <circle cx="280" cy="170" r="4" fill="#9C27B0"/>
-      `
-    }
+    { day: "Sunday", name: "Sunday Stage: Sunday Scenic Cruise", path: "M 30,120 C 120,40 280,200 370,120" },
+    { day: "Monday", name: "Monday Stage: The Weekly Kickoff S-Curve", path: "M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" },
+    { day: "Tuesday", name: "Tuesday Stage: Twin Peaks Climb", path: "M 30,180 Q 110,30 190,160 T 370,40" },
+    { day: "Wednesday", name: "Wednesday Stage: Midweek Mountain Loop", path: "M 30,140 C 100,220 150,20 230,180 C 300,240 320,40 370,50" },
+    { day: "Thursday", name: "Thursday Stage: Rolling Hills Sprint", path: "M 30,80 C 130,200 180,40 270,180 C 330,220 350,70 370,60" },
+    { day: "Friday", name: "Friday Stage: The Weekend Finish Sprint", path: "M 30,200 C 100,200 180,180 250,110 C 310,50 340,50 370,40" },
+    { day: "Saturday", name: "Saturday Stage: Weekend Trail Adventure", path: "M 30,150 Q 120,220 200,120 T 370,90" }
   ];
 
   const todayIndex = new Date().getDay();
   const currentStage = stageRoutes[todayIndex];
 
   // DOM Elements
-  const mapContainer = document.getElementById('mapContainer');
-  const sceneryGroup = document.getElementById('sceneryGroup');
   const roadPath = document.getElementById('roadPath');
   const roadLine = document.getElementById('roadLine');
   const stageTitle = document.getElementById('stageTitle');
@@ -534,9 +481,6 @@
 
   function setupDailyStage() {
     stageTitle.textContent = currentStage.name;
-    mapContainer.style.backgroundColor = currentStage.bg;
-    sceneryGroup.innerHTML = currentStage.scenery;
-
     roadPath.setAttribute('d', currentStage.path);
     roadLine.setAttribute('d', currentStage.path);
 
@@ -565,6 +509,7 @@
 
   let tasks = JSON.parse(localStorage.getItem('woom_tasks')) || defaultTasks;
 
+  // Notes Data
   notesArea.value = localStorage.getItem('woom_notes') || '';
   notesArea.addEventListener('input', () => {
     localStorage.setItem('woom_notes', notesArea.value);
@@ -572,19 +517,29 @@
 
   function saveAndRender() {
     localStorage.setItem('woom_tasks', JSON.stringify(tasks));
-    renderTasks();
+    renderTasksWithAnimation();
     updateBikePosition();
   }
 
-  // Smooth Reordering: Sort active tasks to top, completed tasks to bottom
-  function renderTasks() {
-    taskListEl.innerHTML = '';
-    
+  // Animated FLIP technique for smooth task reordering
+  function renderTasksWithAnimation() {
+    // 1. Sort tasks: Uncompleted first, completed last
     const sortedTasks = [...tasks].sort((a, b) => a.completed - b.completed);
 
+    // 2. Measure current positions before DOM change
+    const oldPositions = new Map();
+    Array.from(taskListEl.children).forEach(el => {
+      const id = el.dataset.id;
+      if (id) oldPositions.set(id, el.getBoundingClientRect().top);
+    });
+
+    // 3. Re-render DOM in sorted order
+    taskListEl.innerHTML = '';
+    
     sortedTasks.forEach(task => {
       const li = document.createElement('li');
       li.className = `task-item ${task.completed ? 'completed' : ''}`;
+      li.dataset.id = task.id;
       
       li.innerHTML = `
         <div class="task-left" onclick="toggleTask(${task.id})">
@@ -595,6 +550,28 @@
       `;
       
       taskListEl.appendChild(li);
+    });
+
+    // 4. Animate elements from old position to new position
+    Array.from(taskListEl.children).forEach(el => {
+      const id = el.dataset.id;
+      const oldTop = oldPositions.get(id);
+      if (oldTop !== undefined) {
+        const newTop = el.getBoundingClientRect().top;
+        const deltaY = oldTop - newTop;
+
+        if (deltaY !== 0) {
+          // Immediately set element back to old position
+          el.style.transform = `translateY(${deltaY}px)`;
+          el.style.transition = 'none';
+
+          // Force repaint & smooth animate to 0
+          requestAnimationFrame(() => {
+            el.style.transition = 'transform 0.4s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.3s ease';
+            el.style.transform = 'translateY(0)';
+          });
+        }
+      }
     });
 
     const completedCount = tasks.filter(t => t.completed).length;
