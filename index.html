@@ -13,8 +13,15 @@
       --text-main: #1D1D1F;
       --text-muted: #6E6E73;
       --border-color: #E5E5EA;
-      --overdue-red: #FF3B30;
-      --overdue-bg: #FFE5E5;
+      
+      /* Urgency Status Colors */
+      --overdue-red: #D97706; /* High alert border */
+      --overdue-bg: #FEF2F2;
+      --overdue-text: #DC2626;
+
+      --due-soon-bg: #FEFCE8;
+      --due-soon-border: #FACC15;
+      --due-soon-text: #CA8A04;
     }
 
     * {
@@ -144,7 +151,7 @@
       gap: 16px;
     }
 
-    /* Collapsible Form Styling */
+    /* Compact Expandable Form */
     .add-task-form {
       display: flex;
       flex-direction: column;
@@ -190,7 +197,6 @@
       background: var(--woom-dark-red);
     }
 
-    /* Dropdown Options Row (hidden by default) */
     .time-dropdown-row {
       display: none;
       align-items: center;
@@ -214,14 +220,13 @@
       background: white;
     }
 
-    /* Expanded Task List View */
     .task-list {
       list-style: none;
       position: relative;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      max-height: 320px; /* Increased height for better task visibility */
+      max-height: 320px;
       overflow-y: auto;
       overflow-x: hidden;
     }
@@ -238,9 +243,16 @@
       will-change: transform;
     }
 
-    .task-item.overdue {
+    /* Red Overdue Card */
+    .task-item.status-overdue {
       background-color: var(--overdue-bg);
-      border-color: var(--overdue-red);
+      border-color: var(--overdue-text);
+    }
+
+    /* Yellow Due Soon Card (Within 1 Hour) */
+    .task-item.status-duesoon {
+      background-color: var(--due-soon-bg);
+      border-color: var(--due-soon-border);
     }
 
     .task-left {
@@ -304,8 +316,13 @@
       color: var(--text-muted);
     }
 
-    .task-item.overdue .task-time-badge {
-      color: var(--overdue-red);
+    .task-item.status-overdue .task-time-badge {
+      color: var(--overdue-text);
+      font-weight: 700;
+    }
+
+    .task-item.status-duesoon .task-time-badge {
+      color: var(--due-soon-text);
       font-weight: 700;
     }
 
@@ -457,14 +474,12 @@
         🎉 Stage Complete! Excellent riding today! 🚲
       </div>
 
-      <!-- Compact Task Input Form -->
       <form class="add-task-form" id="addTaskForm">
         <div class="main-input-row">
           <input type="text" id="taskInput" placeholder="Add a new task..." required />
           <button type="submit">Add Task</button>
         </div>
         
-        <!-- Expandable Time Selector -->
         <div class="time-dropdown-row" id="timeDropdownRow">
           <span>⏰ Due time (optional):</span>
           <input type="time" id="taskTimeInput" />
@@ -517,12 +532,10 @@
 
   let hasTriggeredVictory = false;
 
-  // Open the time dropdown when user clicks inside the task input
   taskInput.addEventListener('focus', () => {
     timeDropdownRow.classList.add('open');
   });
 
-  // Hide the time dropdown if user clicks outside the form
   document.addEventListener('click', (e) => {
     if (!addTaskForm.contains(e.target)) {
       timeDropdownRow.classList.remove('open');
@@ -560,16 +573,25 @@
     localStorage.setItem('woom_notes', notesArea.value);
   });
 
-  function isTaskOverdue(task) {
-    if (!task.time || task.completed) return false;
-    
+  // Calculate task urgency status
+  function getTaskUrgency(task) {
+    if (task.completed || !task.time) return { status: 'normal', minutesDiff: Infinity };
+
     const now = new Date();
     const [hours, minutes] = task.time.split(':').map(Number);
-    
     const dueTime = new Date();
     dueTime.setHours(hours, minutes, 0, 0);
 
-    return now > dueTime;
+    const diffMinutes = (now - dueTime) / (1000 * 60); // positive if overdue, negative if upcoming
+
+    if (diffMinutes > 0) {
+      return { status: 'overdue', minutesDiff: diffMinutes };
+    } else if (diffMinutes >= -60) {
+      // Due within 60 minutes
+      return { status: 'due-soon', minutesDiff: diffMinutes };
+    } else {
+      return { status: 'normal', minutesDiff: diffMinutes };
+    }
   }
 
   function saveAndRender() {
@@ -585,19 +607,64 @@
       if (id) oldPositions.set(id, el.getBoundingClientRect().top);
     });
 
-    const sortedTasks = [...tasks].sort((a, b) => a.completed - b.completed);
+    // Custom Sorting Logic:
+    // 1. Uncompleted tasks first, completed tasks at the bottom
+    // 2. Overdue tasks at top (sorted by longest overdue first)
+    // 3. Due soon tasks next (within 1 hour)
+    // 4. Normal uncompleted tasks
+    const sortedTasks = [...tasks].sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      if (a.completed) return 0; // maintain relative order for completed items
+
+      const urgA = getTaskUrgency(a);
+      const urgB = getTaskUrgency(b);
+
+      // Category priorities: overdue (1), due-soon (2), normal (3)
+      const priorityMap = { 'overdue': 1, 'due-soon': 2, 'normal': 3 };
+      const pA = priorityMap[urgA.status];
+      const pB = priorityMap[urgB.status];
+
+      if (pA !== pB) return pA - pB;
+
+      // If both are overdue, sort by longest overdue first (higher minutesDiff)
+      if (urgA.status === 'overdue' && urgB.status === 'overdue') {
+        return urgB.minutesDiff - urgA.minutesDiff;
+      }
+
+      // If both are due soon, sort by earliest deadline first
+      if (urgA.status === 'due-soon' && urgB.status === 'due-soon') {
+        return urgB.minutesDiff - urgA.minutesDiff;
+      }
+
+      return 0;
+    });
 
     taskListEl.innerHTML = '';
     sortedTasks.forEach(task => {
-      const overdue = isTaskOverdue(task);
+      const urgency = getTaskUrgency(task);
       const li = document.createElement('li');
-      li.className = `task-item ${task.completed ? 'completed' : ''} ${overdue ? 'overdue' : ''}`;
-      li.dataset.id = task.id;
       
+      let statusClass = '';
       let timeLabel = '';
-      if (task.time) {
-        timeLabel = overdue ? `⚠️ Overdue (${task.time})` : `⏰ Due at ${task.time}`;
+
+      if (task.time && !task.completed) {
+        if (urgency.status === 'overdue') {
+          statusClass = 'status-overdue';
+          const minsAgo = Math.floor(urgency.minutesDiff);
+          timeLabel = `⚠️ Overdue by ${minsAgo}m (${task.time})`;
+        } else if (urgency.status === 'due-soon') {
+          statusClass = 'status-duesoon';
+          const minsLeft = Math.abs(Math.floor(urgency.minutesDiff));
+          timeLabel = `⏰ Due soon in ${minsLeft}m (${task.time})`;
+        } else {
+          timeLabel = `⏰ Due at ${task.time}`;
+        }
+      } else if (task.time && task.completed) {
+        timeLabel = `⏰ Due at ${task.time}`;
       }
+
+      li.className = `task-item ${task.completed ? 'completed' : ''} ${statusClass}`;
+      li.dataset.id = task.id;
 
       li.innerHTML = `
         <div class="task-left" onclick="toggleTask(${task.id})">
@@ -613,6 +680,7 @@
       taskListEl.appendChild(li);
     });
 
+    // Apply FLIP smooth transition animation
     Array.from(taskListEl.children).forEach(el => {
       const id = el.dataset.id;
       const oldTop = oldPositions.get(id);
@@ -730,9 +798,10 @@
     setupDailyStage();
     saveAndRender();
     
+    // Check and update urgency every 15 seconds
     setInterval(() => {
       renderTasksWithAnimation();
-    }, 30000);
+    }, 15000);
   });
 
   window.addEventListener('resize', updateBikePosition);
