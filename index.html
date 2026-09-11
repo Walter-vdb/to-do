@@ -108,18 +108,34 @@
       font-weight: 600;
     }
 
+    /* Map container displaying the illustrated background artwork */
     .map-container {
       position: relative;
-      background: linear-gradient(180deg, #BAE6FD 0%, #E0F2FE 60%, #DCFCE7 100%);
+      background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80');
+      background-size: cover;
+      background-position: center;
       height: 260px;
       width: 100%;
       border-bottom: 2px solid var(--border-color);
       overflow: hidden;
     }
 
+    /* Overlay tinted layer to ensure road visibility */
+    .map-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.15);
+      pointer-events: none;
+    }
+
     .map-svg {
       width: 100%;
       height: 100%;
+      position: relative;
+      z-index: 2;
     }
 
     .bike-marker {
@@ -132,7 +148,7 @@
                   top 0.7s cubic-bezier(0.25, 1, 0.5, 1), 
                   transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
       z-index: 10;
-      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35));
       transform-origin: center center;
     }
 
@@ -346,6 +362,8 @@
 
   <div class="main-layout">
     <div class="map-container" id="mapContainer">
+      <div class="map-overlay"></div>
+      
       <svg class="map-svg" viewBox="0 0 400 240" preserveAspectRatio="none">
         <defs>
           <pattern id="chequered" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
@@ -356,24 +374,18 @@
           </pattern>
         </defs>
 
-        <!-- Dynamic Scenery Container (Mountain peaks, hills, trees) -->
-        <g id="sceneryGroup"></g>
-
-        <!-- Winding Road Layer -->
-        <path id="roadPath" d="" fill="none" stroke="#64748B" stroke-width="20" stroke-linecap="round"/>
-        <path id="roadLine" d="" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="6,6" stroke-linecap="round"/>
-        
-        <!-- Foregrounds Rocks & Trees (rendered in front of road) -->
-        <g id="foregroundDecor"></g>
+        <!-- Winding Paved Road Path overlay -->
+        <path id="roadPath" d="" fill="none" stroke="#334155" stroke-width="18" stroke-linecap="round"/>
+        <path id="roadLine" d="" fill="none" stroke="#F8FAFC" stroke-width="2" stroke-dasharray="6,6" stroke-linecap="round"/>
 
         <!-- Start Indicator -->
         <circle id="startCircle" cx="30" cy="200" r="10" fill="#22C55E" />
-        <text id="startText" x="30" y="222" font-size="10" font-weight="bold" text-anchor="middle" fill="#15803D">START</text>
+        <text id="startText" x="30" y="222" font-size="10" font-weight="bold" text-anchor="middle" fill="#FFFFFF" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.8))">START</text>
 
-        <!-- Finish Arch Indicator -->
+        <!-- Chequered Finish Indicator -->
         <g id="finishGroup">
           <circle id="finishCircle" cx="370" cy="40" r="14" fill="url(#chequered)" stroke="#E30613" stroke-width="2"/>
-          <text id="finishText" x="370" y="18" font-size="11" font-weight="bold" text-anchor="middle" fill="#E30613">FINISH 🏁</text>
+          <text id="finishText" x="370" y="18" font-size="11" font-weight="bold" text-anchor="middle" fill="#FFFFFF" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.8))">FINISH 🏁</text>
         </g>
       </svg>
 
@@ -432,50 +444,50 @@
 </div>
 
 <script>
-  // Dynamic scenery templates (Mountain Range & Forest Trail)
-  const sceneryTemplates = {
-    mountain: `
-      <!-- Clouds -->
-      <path d="M 30,30 Q 40,20 50,30 Q 60,20 70,30 A 8,8 0 0,1 30,30 Z" fill="#FFFFFF" opacity="0.7"/>
-      <path d="M 320,25 Q 330,15 340,25 Q 350,15 360,25 A 8,8 0 0,1 320,25 Z" fill="#FFFFFF" opacity="0.7"/>
-
-      <!-- Distant Snowy Mountains -->
-      <polygon points="20,200 90,70 160,200" fill="#94A3B8"/>
-      <polygon points="90,70 70,110 90,100 105,115" fill="#F8FAFC"/> <!-- Snow Cap -->
-      
-      <polygon points="230,200 310,50 390,200" fill="#64748B"/>
-      <polygon points="310,50 290,95 310,85 330,100" fill="#F8FAFC"/> <!-- Snow Cap -->
-
-      <!-- Midground Green Hills -->
-      <path d="M -10,240 Q 90,110 190,240 Z" fill="#4ADE80"/>
-      <path d="M 150,240 Q 280,120 410,240 Z" fill="#22C55E"/>
-    `,
-    forest: `
-      <!-- Clouds -->
-      <path d="M 120,20 Q 130,10 140,20 Q 150,10 160,20 A 8,8 0 0,1 120,20 Z" fill="#FFFFFF" opacity="0.7"/>
-
-      <!-- Soft Rolling Forest Hills -->
-      <path d="M -20,240 Q 120,130 260,240 Z" fill="#86EFAC"/>
-      <path d="M 130,240 Q 270,140 420,240 Z" fill="#4ADE80"/>
-
-      <!-- Dense Forest Tree Silhouettes -->
-      <g fill="#166534">
-        <polygon points="30,160 40,130 50,160"/>
-        <polygon points="45,150 55,120 65,150"/>
-        <polygon points="340,170 350,135 360,170"/>
-        <polygon points="355,160 365,125 375,160"/>
-      </g>
-    `
-  };
-
+  // Daily Stage Routes with specific background images matching mountain or forest themes
   const stageRoutes = [
-    { day: "Sunday", name: "Sunday Stage: Sunday Scenic Cruise", theme: "forest", path: "M 30,180 C 120,120 280,220 370,150" },
-    { day: "Monday", name: "Monday Stage: The Weekly Kickoff S-Curve", theme: "mountain", path: "M 30,200 C 120,210 110,130 200,160 C 280,190 280,100 370,110" },
-    { day: "Tuesday", name: "Tuesday Stage: Twin Peaks Climb", theme: "mountain", path: "M 30,200 Q 110,140 190,190 T 370,120" },
-    { day: "Wednesday", name: "Wednesday Stage: Midweek Mountain Loop", theme: "mountain", path: "M 30,190 C 100,220 150,130 230,190 C 300,230 320,120 370,130" },
-    { day: "Thursday", name: "Thursday Stage: Rolling Hills Sprint", theme: "forest", path: "M 30,170 C 130,220 180,140 270,190 C 330,220 350,140 370,140" },
-    { day: "Friday", name: "Friday Stage: The Weekend Finish Sprint", theme: "forest", path: "M 30,200 C 100,200 180,180 250,150 C 310,120 340,130 370,120" },
-    { day: "Saturday", name: "Saturday Stage: Weekend Trail Adventure", theme: "forest", path: "M 30,180 Q 120,220 200,160 T 370,140" }
+    { 
+      day: "Sunday", 
+      name: "Sunday Stage: Sunday Scenic Cruise", 
+      bg: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80", 
+      path: "M 30,190 C 120,130 280,220 370,130" 
+    },
+    { 
+      day: "Monday", 
+      name: "Monday Stage: Weekly Kickoff Mountain Pass", 
+      bg: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80", 
+      path: "M 30,200 C 120,210 110,130 200,160 C 280,190 280,100 370,110" 
+    },
+    { 
+      day: "Tuesday", 
+      name: "Tuesday Stage: Twin Peaks Climb", 
+      bg: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80", 
+      path: "M 30,200 Q 110,140 190,190 T 370,120" 
+    },
+    { 
+      day: "Wednesday", 
+      name: "Wednesday Stage: Midweek Mountain Loop", 
+      bg: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80", 
+      path: "M 30,190 C 100,220 150,130 230,190 C 300,230 320,120 370,130" 
+    },
+    { 
+      day: "Thursday", 
+      name: "Thursday Stage: Rolling Hills Sprint", 
+      bg: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80", 
+      path: "M 30,170 C 130,220 180,140 270,190 C 330,220 350,140 370,140" 
+    },
+    { 
+      day: "Friday", 
+      name: "Friday Stage: Weekend Finish Sprint", 
+      bg: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80", 
+      path: "M 30,200 C 100,200 180,180 250,150 C 310,120 340,130 370,120" 
+    },
+    { 
+      day: "Saturday", 
+      name: "Saturday Stage: Weekend Trail Adventure", 
+      bg: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80", 
+      path: "M 30,180 Q 120,220 200,160 T 370,140" 
+    }
   ];
 
   const todayIndex = new Date().getDay();
@@ -496,24 +508,10 @@
   const victoryCard = document.getElementById('victoryCard');
   const notesArea = document.getElementById('notesArea');
   const mapContainer = document.getElementById('mapContainer');
-  const sceneryGroup = document.getElementById('sceneryGroup');
-  const foregroundDecor = document.getElementById('foregroundDecor');
 
   function setupDailyStage() {
     stageTitle.textContent = currentStage.name;
-    sceneryGroup.innerHTML = sceneryTemplates[currentStage.theme];
-
-    // Add decorative foreground trees/rocks that sit around the winding path
-    foregroundDecor.innerHTML = `
-      <g fill="#15803D">
-        <polygon points="110,210 118,185 126,210"/>
-        <polygon points="270,220 278,195 286,220"/>
-      </g>
-      <g fill="#94A3B8">
-        <ellipse cx="180" cy="215" rx="7" ry="4"/>
-        <ellipse cx="320" cy="180" rx="9" ry="5"/>
-      </g>
-    `;
+    mapContainer.style.backgroundImage = `url('${currentStage.bg}')`;
 
     roadPath.setAttribute('d', currentStage.path);
     roadLine.setAttribute('d', currentStage.path);
