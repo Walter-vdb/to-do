@@ -13,6 +13,8 @@
       --text-main: #1D1D1F;
       --text-muted: #6E6E73;
       --border-color: #E5E5EA;
+      --overdue-red: #FF3B30;
+      --overdue-bg: #FFE5E5;
     }
 
     * {
@@ -142,12 +144,19 @@
       gap: 16px;
     }
 
+    /* Input Form for Tasks and Due Times */
     .add-task-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-row {
       display: flex;
       gap: 8px;
     }
 
-    .add-task-form input {
+    .add-task-form input[type="text"] {
       flex: 1;
       padding: 12px 16px;
       border: 2px solid var(--border-color);
@@ -155,6 +164,16 @@
       font-size: 0.95rem;
       outline: none;
       transition: border-color 0.2s;
+    }
+
+    .add-task-form input[type="time"] {
+      padding: 10px 12px;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 0.88rem;
+      outline: none;
+      color: var(--text-main);
+      background: white;
     }
 
     .add-task-form input:focus {
@@ -165,7 +184,7 @@
       background: var(--woom-red);
       color: white;
       border: none;
-      padding: 0 18px;
+      padding: 12px 18px;
       border-radius: 12px;
       font-weight: 700;
       cursor: pointer;
@@ -195,8 +214,14 @@
       background: var(--woom-card-bg);
       border: 1px solid var(--border-color);
       border-radius: 12px;
-      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.2s, opacity 0.2s;
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.2s, opacity 0.2s, border-color 0.2s;
       will-change: transform;
+    }
+
+    /* Overdue Task Highlight */
+    .task-item.overdue {
+      background-color: var(--overdue-bg);
+      border-color: var(--overdue-red);
     }
 
     .task-left {
@@ -237,6 +262,12 @@
       display: block;
     }
 
+    .task-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
     .task-title {
       font-size: 0.95rem;
       font-weight: 500;
@@ -246,6 +277,17 @@
     .task-item.completed .task-title {
       text-decoration: line-through;
       color: var(--text-muted);
+    }
+
+    .task-time-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .task-item.overdue .task-time-badge {
+      color: var(--overdue-red);
+      font-weight: 700;
     }
 
     .delete-btn {
@@ -312,7 +354,6 @@
       border-color: var(--woom-red);
     }
 
-    /* Confetti Styling */
     .confetti {
       position: absolute;
       width: 8px;
@@ -348,21 +389,15 @@
   <div class="main-layout">
     <div class="map-container" id="mapContainer">
       <svg class="map-svg" viewBox="0 0 400 240" preserveAspectRatio="none">
-        <!-- Neutral Grey Road Track -->
         <path id="roadPath" d="" fill="none" stroke="#D1D5DB" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-        
-        <!-- White Dotted Center Line -->
         <path id="roadLine" d="" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-dasharray="6,6" stroke-linecap="round"/>
         
-        <!-- Start Indicator -->
         <circle id="startCircle" cx="0" cy="0" r="10" fill="#22C55E" />
         <text id="startText" x="0" y="0" font-size="10" font-weight="bold" text-anchor="middle" fill="#15803D">START</text>
 
-        <!-- Finish Indicator Circle Only -->
         <circle id="finishCircle" cx="0" cy="0" r="12" fill="#E30613" />
       </svg>
 
-      <!-- Bike Marker -->
       <div class="bike-marker" id="bikeMarker">
         <svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="24" cy="54" r="18" stroke="#222" stroke-width="3.5" fill="none"/>
@@ -398,9 +433,13 @@
         🎉 Stage Complete! Excellent riding today! 🚲
       </div>
 
+      <!-- Add Task Form with Optional Time Input -->
       <form class="add-task-form" id="addTaskForm">
         <input type="text" id="taskInput" placeholder="Add a new task..." required />
-        <button type="submit">Add Task</button>
+        <div class="input-row">
+          <input type="time" id="taskTimeInput" title="Optional due time" />
+          <button type="submit">Add Task</button>
+        </div>
       </form>
 
       <ul class="task-list" id="taskList"></ul>
@@ -440,6 +479,7 @@
   const taskListEl = document.getElementById('taskList');
   const addTaskForm = document.getElementById('addTaskForm');
   const taskInput = document.getElementById('taskInput');
+  const taskTimeInput = document.getElementById('taskTimeInput');
   const progressText = document.getElementById('progressText');
   const victoryCard = document.getElementById('victoryCard');
   const notesArea = document.getElementById('notesArea');
@@ -466,10 +506,9 @@
   }
 
   const defaultTasks = [
-    { id: 1, text: "Review Q3 cycling deck", completed: false },
-    { id: 2, text: "Sync with logistics team", completed: false },
-    { id: 3, text: "Test new accessories lineup", completed: false },
-    { id: 4, text: "Prepare customer feedback notes", completed: false }
+    { id: 1, text: "Review Q3 cycling deck", time: "12:00", completed: false },
+    { id: 2, text: "Sync with logistics team", time: "", completed: false },
+    { id: 3, text: "Test new accessories lineup", time: "15:30", completed: false }
   ];
 
   let tasks = JSON.parse(localStorage.getItem('woom_tasks')) || defaultTasks;
@@ -478,6 +517,18 @@
   notesArea.addEventListener('input', () => {
     localStorage.setItem('woom_notes', notesArea.value);
   });
+
+  function isTaskOverdue(task) {
+    if (!task.time || task.completed) return false;
+    
+    const now = new Date();
+    const [hours, minutes] = task.time.split(':').map(Number);
+    
+    const dueTime = new Date();
+    dueTime.setHours(hours, minutes, 0, 0);
+
+    return now > dueTime;
+  }
 
   function saveAndRender() {
     localStorage.setItem('woom_tasks', JSON.stringify(tasks));
@@ -496,14 +547,23 @@
 
     taskListEl.innerHTML = '';
     sortedTasks.forEach(task => {
+      const overdue = isTaskOverdue(task);
       const li = document.createElement('li');
-      li.className = `task-item ${task.completed ? 'completed' : ''}`;
+      li.className = `task-item ${task.completed ? 'completed' : ''} ${overdue ? 'overdue' : ''}`;
       li.dataset.id = task.id;
       
+      let timeLabel = '';
+      if (task.time) {
+        timeLabel = overdue ? `⚠️ Overdue (${task.time})` : `⏰ Due at ${task.time}`;
+      }
+
       li.innerHTML = `
         <div class="task-left" onclick="toggleTask(${task.id})">
           <div class="custom-checkbox"></div>
-          <span class="task-title">${escapeHtml(task.text)}</span>
+          <div class="task-info">
+            <span class="task-title">${escapeHtml(task.text)}</span>
+            ${timeLabel ? `<span class="task-time-badge">${timeLabel}</span>` : ''}
+          </div>
         </div>
         <button class="delete-btn" onclick="deleteTask(${task.id})" title="Delete task">✕</button>
       `;
@@ -574,9 +634,12 @@
   addTaskForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const text = taskInput.value.trim();
+    const time = taskTimeInput.value;
+    
     if (text) {
-      tasks.push({ id: Date.now(), text, completed: false });
+      tasks.push({ id: Date.now(), text, time, completed: false });
       taskInput.value = '';
+      taskTimeInput.value = '';
       saveAndRender();
     }
   });
@@ -623,6 +686,11 @@
   window.addEventListener('DOMContentLoaded', () => {
     setupDailyStage();
     saveAndRender();
+    
+    // Automatically check for overdue status every 30 seconds
+    setInterval(() => {
+      renderTasksWithAnimation();
+    }, 30000);
   });
 
   window.addEventListener('resize', updateBikePosition);
