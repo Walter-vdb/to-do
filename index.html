@@ -136,6 +136,18 @@
       transform-origin: center center;
     }
 
+    /* Finish Banner Graphic Overlay */
+    .finish-banner-marker {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      margin-left: -25px;
+      margin-top: -38px;
+      z-index: 8;
+      pointer-events: none;
+      filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2));
+    }
+
     /* Content & Left Panel */
     .content-left {
       padding: 20px;
@@ -178,7 +190,7 @@
       background: var(--woom-dark-red);
     }
 
-    /* Animated Task List Container */
+    /* Task List */
     .task-list {
       list-style: none;
       position: relative;
@@ -342,10 +354,30 @@
         
         <circle id="startCircle" cx="30" cy="200" r="10" fill="#4CAF50" />
         <text id="startText" x="30" y="222" font-size="10" font-weight="bold" text-anchor="middle" fill="#2E7D32">START</text>
-
-        <circle id="finishCircle" cx="370" cy="40" r="12" fill="#E30613" />
-        <text id="finishText" x="370" y="24" font-size="11" font-weight="bold" text-anchor="middle" fill="#E30613">FINISH 🏁</text>
       </svg>
+
+      <!-- Custom SVG Finish Banner Marker -->
+      <div class="finish-banner-marker" id="finishBannerMarker">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- White Banner Fill with Curved Top -->
+          <path d="M 15,20 Q 50,14 85,20 L 85,82 Q 50,78 15,82 Z" fill="#FFFFFF" />
+          
+          <!-- Red Stripe Across Bottom -->
+          <path d="M 15,64 Q 50,60 85,64 L 85,73 Q 50,69 15,73 Z" fill="#FF5252" />
+          
+          <!-- Outer Dark Blue Outline Arch -->
+          <path d="M 15,20 Q 50,14 85,20 L 85,82 Q 50,78 15,82 Z" stroke="#0B2B6B" stroke-width="7" stroke-linejoin="round" />
+          
+          <!-- Horizontal Inner Blue Lines -->
+          <path d="M 15,40 Q 50,34 85,40" stroke="#0B2B6B" stroke-width="5" />
+          <path d="M 15,64 Q 50,58 85,64" stroke="#0B2B6B" stroke-width="5" />
+          <path d="M 15,73 Q 50,67 85,73" stroke="#0B2B6B" stroke-width="5" />
+          <path d="M 10,82 L 90,82" stroke="#0B2B6B" stroke-width="7" stroke-linecap="round" />
+
+          <!-- Bold Red FINISH Text -->
+          <text x="50" y="34" font-family="-apple-system, Arial, sans-serif" font-size="17" font-weight="900" fill="#FF5252" text-anchor="middle">FINISH</text>
+        </svg>
+      </div>
 
       <!-- Woom Bike Graphic -->
       <div class="bike-marker" id="bikeMarker">
@@ -425,8 +457,7 @@
   const stageTitle = document.getElementById('stageTitle');
   const startCircle = document.getElementById('startCircle');
   const startText = document.getElementById('startText');
-  const finishCircle = document.getElementById('finishCircle');
-  const finishText = document.getElementById('finishText');
+  const finishBannerMarker = document.getElementById('finishBannerMarker');
   const bikeMarker = document.getElementById('bikeMarker');
   const taskListEl = document.getElementById('taskList');
   const addTaskForm = document.getElementById('addTaskForm');
@@ -440,19 +471,31 @@
     roadPath.setAttribute('d', currentStage.path);
     roadLine.setAttribute('d', currentStage.path);
 
-    const totalLen = roadPath.getTotalLength();
     const startPt = roadPath.getPointAtLength(0);
-    const finishPt = roadPath.getPointAtLength(totalLen);
-
     startCircle.setAttribute('cx', startPt.x);
     startCircle.setAttribute('cy', startPt.y);
     startText.setAttribute('x', startPt.x);
     startText.setAttribute('y', Math.min(230, startPt.y + 22));
 
-    finishCircle.setAttribute('cx', finishPt.x);
-    finishCircle.setAttribute('cy', finishPt.y);
-    finishText.setAttribute('x', finishPt.x);
-    finishText.setAttribute('y', Math.max(16, finishPt.y - 16));
+    positionFinishBanner();
+  }
+
+  // Positions the Finish Banner SVG exact at the end of the day's route
+  function positionFinishBanner() {
+    const totalLen = roadPath.getTotalLength();
+    const finishPt = roadPath.getPointAtLength(totalLen);
+
+    const svgEl = document.querySelector('.map-svg');
+    const rect = svgEl.getBoundingClientRect();
+
+    const scaleX = rect.width / 400;
+    const scaleY = rect.height / 240;
+
+    const pixelX = finishPt.x * scaleX;
+    const pixelY = finishPt.y * scaleY;
+
+    finishBannerMarker.style.left = `${pixelX}px`;
+    finishBannerMarker.style.top = `${pixelY}px`;
   }
 
   // Tasks Data
@@ -477,9 +520,7 @@
     updateBikePosition();
   }
 
-  // Smooth FLIP (First, Last, Invert, Play) Animation for Task Reordering
   function renderTasksWithAnimation() {
-    // Record current positions (First)
     const oldPositions = new Map();
     Array.from(taskListEl.children).forEach(el => {
       const id = el.dataset.id;
@@ -488,10 +529,8 @@
       }
     });
 
-    // Sort tasks: Active first, Completed at bottom
     const sortedTasks = [...tasks].sort((a, b) => a.completed - b.completed);
 
-    // Re-render HTML (Last)
     taskListEl.innerHTML = '';
     sortedTasks.forEach(task => {
       const li = document.createElement('li');
@@ -509,7 +548,6 @@
       taskListEl.appendChild(li);
     });
 
-    // Calculate delta and apply smooth transition (Invert & Play)
     Array.from(taskListEl.children).forEach(el => {
       const id = el.dataset.id;
       const oldTop = oldPositions.get(id);
@@ -519,11 +557,9 @@
         const deltaY = oldTop - newTop;
 
         if (deltaY !== 0) {
-          // Temporarily set element back to old position
           el.style.transform = `translateY(${deltaY}px)`;
           el.style.transition = 'none';
 
-          // Force reflow and animate smoothly to new position
           requestAnimationFrame(() => {
             el.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
             el.style.transform = 'translateY(0)';
@@ -598,7 +634,10 @@
   }
 
   setupDailyStage();
-  window.addEventListener('resize', updateBikePosition);
+  window.addEventListener('resize', () => {
+    positionFinishBanner();
+    updateBikePosition();
+  });
   saveAndRender();
 </script>
 
