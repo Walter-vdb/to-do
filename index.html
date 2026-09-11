@@ -111,7 +111,7 @@
     .map-container {
       position: relative;
       background: var(--woom-gray-bg);
-      height: 260px;
+      height: 220px;
       width: 100%;
       border-bottom: 2px solid var(--border-color);
       overflow: hidden;
@@ -144,21 +144,25 @@
       gap: 16px;
     }
 
-    /* Input Form for Tasks and Due Times */
+    /* Collapsible Form Styling */
     .add-task-form {
       display: flex;
       flex-direction: column;
       gap: 8px;
+      background: var(--woom-gray-bg);
+      padding: 8px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
     }
 
-    .input-row {
+    .main-input-row {
       display: flex;
       gap: 8px;
     }
 
     .add-task-form input[type="text"] {
       flex: 1;
-      padding: 12px 16px;
+      padding: 10px 14px;
       border: 2px solid var(--border-color);
       border-radius: 12px;
       font-size: 0.95rem;
@@ -166,17 +170,7 @@
       transition: border-color 0.2s;
     }
 
-    .add-task-form input[type="time"] {
-      padding: 10px 12px;
-      border: 2px solid var(--border-color);
-      border-radius: 12px;
-      font-size: 0.88rem;
-      outline: none;
-      color: var(--text-main);
-      background: white;
-    }
-
-    .add-task-form input:focus {
+    .add-task-form input[type="text"]:focus {
       border-color: var(--woom-red);
     }
 
@@ -184,24 +178,50 @@
       background: var(--woom-red);
       color: white;
       border: none;
-      padding: 12px 18px;
+      padding: 0 16px;
       border-radius: 12px;
       font-weight: 700;
       cursor: pointer;
       transition: background 0.2s;
+      white-space: nowrap;
     }
 
     .add-task-form button:hover {
       background: var(--woom-dark-red);
     }
 
+    /* Dropdown Options Row (hidden by default) */
+    .time-dropdown-row {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding-top: 4px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .time-dropdown-row.open {
+      display: flex;
+    }
+
+    .time-dropdown-row input[type="time"] {
+      padding: 6px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      outline: none;
+      background: white;
+    }
+
+    /* Expanded Task List View */
     .task-list {
       list-style: none;
       position: relative;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      max-height: 260px;
+      max-height: 320px; /* Increased height for better task visibility */
       overflow-y: auto;
       overflow-x: hidden;
     }
@@ -218,7 +238,6 @@
       will-change: transform;
     }
 
-    /* Overdue Task Highlight */
     .task-item.overdue {
       background-color: var(--overdue-bg);
       border-color: var(--overdue-red);
@@ -364,9 +383,14 @@
       animation: fall 2.5s ease-out forwards;
     }
 
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(-4px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
     @keyframes fall {
       0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(260px) rotate(720deg); opacity: 0; }
+      100% { transform: translateY(220px) rotate(720deg); opacity: 0; }
     }
 
     @keyframes pop {
@@ -388,7 +412,7 @@
 
   <div class="main-layout">
     <div class="map-container" id="mapContainer">
-      <svg class="map-svg" viewBox="0 0 400 240" preserveAspectRatio="none">
+      <svg class="map-svg" viewBox="0 0 400 220" preserveAspectRatio="none">
         <path id="roadPath" d="" fill="none" stroke="#D1D5DB" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
         <path id="roadLine" d="" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-dasharray="6,6" stroke-linecap="round"/>
         
@@ -433,12 +457,17 @@
         🎉 Stage Complete! Excellent riding today! 🚲
       </div>
 
-      <!-- Add Task Form with Optional Time Input -->
+      <!-- Compact Task Input Form -->
       <form class="add-task-form" id="addTaskForm">
-        <input type="text" id="taskInput" placeholder="Add a new task..." required />
-        <div class="input-row">
-          <input type="time" id="taskTimeInput" title="Optional due time" />
+        <div class="main-input-row">
+          <input type="text" id="taskInput" placeholder="Add a new task..." required />
           <button type="submit">Add Task</button>
+        </div>
+        
+        <!-- Expandable Time Selector -->
+        <div class="time-dropdown-row" id="timeDropdownRow">
+          <span>⏰ Due time (optional):</span>
+          <input type="time" id="taskTimeInput" />
         </div>
       </form>
 
@@ -457,13 +486,13 @@
 
 <script>
   const stageRoutes = [
-    { day: "Sunday", name: "Sunday Stage: Sunday Scenic Cruise", path: "M 30,120 C 120,40 280,200 370,120" },
-    { day: "Monday", name: "Monday Stage: The Weekly Kickoff S-Curve", path: "M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" },
-    { day: "Tuesday", name: "Tuesday Stage: Twin Peaks Climb", path: "M 30,180 Q 110,30 190,160 T 370,40" },
-    { day: "Wednesday", name: "Wednesday Stage: Midweek Mountain Loop", path: "M 30,140 C 100,220 150,20 230,180 C 300,240 320,40 370,50" },
-    { day: "Thursday", name: "Thursday Stage: Rolling Hills Sprint", path: "M 30,80 C 130,200 180,40 270,180 C 330,220 350,70 370,60" },
-    { day: "Friday", name: "Friday Stage: The Weekend Finish Sprint", path: "M 30,200 C 100,200 180,180 250,110 C 310,50 340,50 370,40" },
-    { day: "Saturday", name: "Saturday Stage: Weekend Trail Adventure", path: "M 30,150 Q 120,220 200,120 T 370,90" }
+    { day: "Sunday", name: "Sunday Stage: Sunday Scenic Cruise", path: "M 30,110 C 120,30 280,180 370,110" },
+    { day: "Monday", name: "Monday Stage: The Weekly Kickoff S-Curve", path: "M 30,180 C 120,180 120,30 200,110 C 280,180 280,30 370,30" },
+    { day: "Tuesday", name: "Tuesday Stage: Twin Peaks Climb", path: "M 30,160 Q 110,20 190,140 T 370,30" },
+    { day: "Wednesday", name: "Wednesday Stage: Midweek Mountain Loop", path: "M 30,130 C 100,200 150,10 230,160 C 300,220 320,30 370,40" },
+    { day: "Thursday", name: "Thursday Stage: Rolling Hills Sprint", path: "M 30,70 C 130,180 180,30 270,160 C 330,200 350,60 370,50" },
+    { day: "Friday", name: "Friday Stage: The Weekend Finish Sprint", path: "M 30,180 C 100,180 180,160 250,100 C 310,40 340,40 370,30" },
+    { day: "Saturday", name: "Saturday Stage: Weekend Trail Adventure", path: "M 30,130 Q 120,200 200,110 T 370,80" }
   ];
 
   const todayIndex = new Date().getDay();
@@ -480,12 +509,25 @@
   const addTaskForm = document.getElementById('addTaskForm');
   const taskInput = document.getElementById('taskInput');
   const taskTimeInput = document.getElementById('taskTimeInput');
+  const timeDropdownRow = document.getElementById('timeDropdownRow');
   const progressText = document.getElementById('progressText');
   const victoryCard = document.getElementById('victoryCard');
   const notesArea = document.getElementById('notesArea');
   const mapContainer = document.getElementById('mapContainer');
 
   let hasTriggeredVictory = false;
+
+  // Open the time dropdown when user clicks inside the task input
+  taskInput.addEventListener('focus', () => {
+    timeDropdownRow.classList.add('open');
+  });
+
+  // Hide the time dropdown if user clicks outside the form
+  document.addEventListener('click', (e) => {
+    if (!addTaskForm.contains(e.target)) {
+      timeDropdownRow.classList.remove('open');
+    }
+  });
 
   function setupDailyStage() {
     stageTitle.textContent = currentStage.name;
@@ -499,7 +541,7 @@
     startCircle.setAttribute('cx', startPt.x);
     startCircle.setAttribute('cy', startPt.y);
     startText.setAttribute('x', startPt.x);
-    startText.setAttribute('y', Math.min(230, startPt.y + 22));
+    startText.setAttribute('y', Math.min(210, startPt.y + 20));
 
     finishCircle.setAttribute('cx', finishPt.x);
     finishCircle.setAttribute('cy', finishPt.y);
@@ -640,6 +682,7 @@
       tasks.push({ id: Date.now(), text, time, completed: false });
       taskInput.value = '';
       taskTimeInput.value = '';
+      timeDropdownRow.classList.remove('open');
       saveAndRender();
     }
   });
@@ -667,7 +710,7 @@
     const rect = svgEl.getBoundingClientRect();
     
     const scaleX = rect.width / 400;
-    const scaleY = rect.height / 240;
+    const scaleY = rect.height / 220;
 
     const pixelX = pt.x * scaleX;
     const pixelY = pt.y * scaleY;
@@ -687,7 +730,6 @@
     setupDailyStage();
     saveAndRender();
     
-    // Automatically check for overdue status every 30 seconds
     setInterval(() => {
       renderTasksWithAnimation();
     }, 30000);
