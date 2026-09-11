@@ -130,7 +130,7 @@
       height: 38px;
       margin-left: -27px;
       margin-top: -19px;
-      transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
       z-index: 10;
       filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));
       transform-origin: center center;
@@ -340,11 +340,20 @@
         <path id="roadLine" d="M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" 
               fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="6,6" stroke-linecap="round"/>
         
+        <!-- Start Marker -->
         <circle id="startCircle" cx="30" cy="200" r="10" fill="#4CAF50" />
         <text id="startText" x="30" y="222" font-size="10" font-weight="bold" text-anchor="middle" fill="#2E7D32">START</text>
 
-        <circle id="finishCircle" cx="370" cy="40" r="12" fill="#E30613" />
-        <text id="finishText" x="370" y="24" font-size="11" font-weight="bold" text-anchor="middle" fill="#E30613">FINISH 🏁</text>
+        <!-- Clean Flat Finish Banner Line -->
+        <g id="finishGroup" transform="translate(320, 10)" style="z-index: 5;">
+          <line x1="2" y1="4" x2="2" y2="38" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>
+          <line x1="42" y1="4" x2="42" y2="38" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>
+          <line x1="-2" y1="38" x2="6" y2="38" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>
+          <line x1="38" y1="38" x2="46" y2="38" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>
+          
+          <rect x="2" y="8" width="40" height="18" rx="3" fill="#FFFFFF" stroke="#1D1D1F" stroke-width="2.5"/>
+          <text x="22" y="21" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" font-weight="900" text-anchor="middle" fill="#E30613" letter-spacing="0.8">FINISH</text>
+        </g>
       </svg>
 
       <!-- Woom Bike Graphic -->
@@ -407,13 +416,13 @@
 <script>
   // Daily Stage Routes
   const stageRoutes = [
-    { day: "Sunday", name: "Sunday Stage: Sunday Scenic Cruise", path: "M 30,120 C 120,40 280,200 370,120" },
-    { day: "Monday", name: "Monday Stage: The Weekly Kickoff S-Curve", path: "M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" },
-    { day: "Tuesday", name: "Tuesday Stage: Twin Peaks Climb", path: "M 30,180 Q 110,30 190,160 T 370,40" },
-    { day: "Wednesday", name: "Wednesday Stage: Midweek Mountain Loop", path: "M 30,140 C 100,220 150,20 230,180 C 300,240 320,40 370,50" },
-    { day: "Thursday", name: "Thursday Stage: Rolling Hills Sprint", path: "M 30,80 C 130,200 180,40 270,180 C 330,220 350,70 370,60" },
-    { day: "Friday", name: "Friday Stage: The Weekend Finish Sprint", path: "M 30,200 C 100,200 180,180 250,110 C 310,50 340,50 370,40" },
-    { day: "Saturday", name: "Saturday Stage: Weekend Trail Adventure", path: "M 30,150 Q 120,220 200,120 T 370,90" }
+    { day: "Sunday", name: "Sunday Stage: Sunday Scenic Cruise", path: "M 30,120 C 120,40 280,200 380,120" },
+    { day: "Monday", name: "Monday Stage: The Weekly Kickoff S-Curve", path: "M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 380,40" },
+    { day: "Tuesday", name: "Tuesday Stage: Twin Peaks Climb", path: "M 30,180 Q 110,30 190,160 T 380,40" },
+    { day: "Wednesday", name: "Wednesday Stage: Midweek Mountain Loop", path: "M 30,140 C 100,220 150,20 230,180 C 300,240 320,40 380,50" },
+    { day: "Thursday", name: "Thursday Stage: Rolling Hills Sprint", path: "M 30,80 C 130,200 180,40 270,180 C 330,220 350,70 380,60" },
+    { day: "Friday", name: "Friday Stage: The Weekend Finish Sprint", path: "M 30,200 C 100,200 180,180 250,110 C 310,50 340,50 380,40" },
+    { day: "Saturday", name: "Saturday Stage: Weekend Trail Adventure", path: "M 30,150 Q 120,220 200,120 T 380,90" }
   ];
 
   const todayIndex = new Date().getDay();
@@ -425,8 +434,7 @@
   const stageTitle = document.getElementById('stageTitle');
   const startCircle = document.getElementById('startCircle');
   const startText = document.getElementById('startText');
-  const finishCircle = document.getElementById('finishCircle');
-  const finishText = document.getElementById('finishText');
+  const finishGroup = document.getElementById('finishGroup');
   const bikeMarker = document.getElementById('bikeMarker');
   const taskListEl = document.getElementById('taskList');
   const addTaskForm = document.getElementById('addTaskForm');
@@ -442,17 +450,14 @@
 
     const totalLen = roadPath.getTotalLength();
     const startPt = roadPath.getPointAtLength(0);
-    const finishPt = roadPath.getPointAtLength(totalLen);
+    const finishPt = roadPath.getPointAtLength(totalLen * 0.85);
 
     startCircle.setAttribute('cx', startPt.x);
     startCircle.setAttribute('cy', startPt.y);
     startText.setAttribute('x', startPt.x);
     startText.setAttribute('y', Math.min(230, startPt.y + 22));
 
-    finishCircle.setAttribute('cx', finishPt.x);
-    finishCircle.setAttribute('cy', finishPt.y);
-    finishText.setAttribute('x', finishPt.x);
-    finishText.setAttribute('y', Math.max(16, finishPt.y - 16));
+    finishGroup.setAttribute('transform', `translate(${finishPt.x - 22}, ${finishPt.y - 20})`);
   }
 
   // Tasks Data
@@ -477,9 +482,7 @@
     updateBikePosition();
   }
 
-  // Smooth FLIP (First, Last, Invert, Play) Animation for Task Reordering
   function renderTasksWithAnimation() {
-    // Record current positions (First)
     const oldPositions = new Map();
     Array.from(taskListEl.children).forEach(el => {
       const id = el.dataset.id;
@@ -488,10 +491,8 @@
       }
     });
 
-    // Sort tasks: Active first, Completed at bottom
     const sortedTasks = [...tasks].sort((a, b) => a.completed - b.completed);
 
-    // Re-render HTML (Last)
     taskListEl.innerHTML = '';
     sortedTasks.forEach(task => {
       const li = document.createElement('li');
@@ -509,7 +510,6 @@
       taskListEl.appendChild(li);
     });
 
-    // Calculate delta and apply smooth transition (Invert & Play)
     Array.from(taskListEl.children).forEach(el => {
       const id = el.dataset.id;
       const oldTop = oldPositions.get(id);
@@ -519,11 +519,9 @@
         const deltaY = oldTop - newTop;
 
         if (deltaY !== 0) {
-          // Temporarily set element back to old position
           el.style.transform = `translateY(${deltaY}px)`;
           el.style.transition = 'none';
 
-          // Force reflow and animate smoothly to new position
           requestAnimationFrame(() => {
             el.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
             el.style.transform = 'translateY(0)';
@@ -565,6 +563,7 @@
   function updateBikePosition() {
     const total = tasks.length;
     const completed = tasks.filter(t => t.completed).length;
+    
     const percentage = total === 0 ? 0 : completed / total;
 
     const pathLength = roadPath.getTotalLength();
@@ -580,6 +579,8 @@
     const svgEl = document.querySelector('.map-svg');
     const rect = svgEl.getBoundingClientRect();
     
+    if (rect.width === 0 || rect.height === 0) return;
+
     const scaleX = rect.width / 400;
     const scaleY = rect.height / 240;
 
@@ -598,8 +599,14 @@
   }
 
   setupDailyStage();
-  window.addEventListener('resize', updateBikePosition);
   saveAndRender();
+
+  // Ensures accurate layout dimensions after initial page draw
+  requestAnimationFrame(() => {
+    updateBikePosition();
+  });
+  
+  window.addEventListener('resize', updateBikePosition);
 </script>
 
 </body>
