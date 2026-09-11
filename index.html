@@ -8,7 +8,7 @@
     :root {
       --woom-red: #E30613;
       --woom-dark-red: #B5040F;
-      --woom-gray-bg: #F8F9FA;
+      --woom-gray-bg: #F4F5F7;
       --woom-card-bg: #FFFFFF;
       --text-main: #1D1D1F;
       --text-muted: #6E6E73;
@@ -27,27 +27,27 @@
       color: var(--text-main);
       display: flex;
       justify-content: center;
+      align-items: center;
       min-height: 100vh;
-      padding: 16px;
+      padding: 24px 16px;
     }
 
     .app-container {
       width: 100%;
-      max-width: 480px;
+      max-width: 960px;
       background: var(--woom-card-bg);
       border-radius: 24px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      position: relative;
     }
 
     /* Header */
     header {
       background-color: var(--woom-red);
       color: white;
-      padding: 20px 24px;
+      padding: 20px 28px;
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -60,12 +60,12 @@
     }
 
     header h1 {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       font-weight: 800;
       letter-spacing: -0.5px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     header h1 span {
@@ -73,13 +73,13 @@
       color: var(--woom-red);
       padding: 2px 8px;
       border-radius: 6px;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       font-weight: 900;
       text-transform: lowercase;
     }
 
     .stage-subtitle {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: 600;
       opacity: 0.9;
       text-transform: uppercase;
@@ -88,17 +88,24 @@
 
     .badge {
       background: rgba(255, 255, 255, 0.2);
-      padding: 4px 10px;
+      padding: 6px 14px;
       border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 600;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    /* Main Grid Layout for Desktop */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      width: 100%;
     }
 
     /* Map Track Viewport */
     .map-container {
       position: relative;
-      background: #E8F5E9; /* Grass background */
-      height: 240px;
+      background: #E8F5E9;
+      height: 280px;
       width: 100%;
       border-bottom: 2px solid var(--border-color);
       overflow: hidden;
@@ -112,35 +119,34 @@
     /* Bike Icon Overlay */
     .bike-marker {
       position: absolute;
-      width: 54px;
-      height: 38px;
-      margin-left: -27px;
-      margin-top: -19px;
+      width: 58px;
+      height: 40px;
+      margin-left: -29px;
+      margin-top: -20px;
       transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
       z-index: 10;
       filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));
       transform-origin: center center;
     }
 
-    /* Main Content & Form */
+    /* Content & Task Section */
     .content {
-      padding: 20px;
-      flex: 1;
+      padding: 28px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 20px;
     }
 
     .add-task-form {
       display: flex;
-      gap: 8px;
+      gap: 10px;
     }
 
     .add-task-form input {
       flex: 1;
-      padding: 12px 16px;
+      padding: 14px 18px;
       border: 2px solid var(--border-color);
-      border-radius: 12px;
+      border-radius: 14px;
       font-size: 0.95rem;
       outline: none;
       transition: border-color 0.2s;
@@ -154,15 +160,20 @@
       background: var(--woom-red);
       color: white;
       border: none;
-      padding: 0 18px;
-      border-radius: 12px;
+      padding: 0 22px;
+      border-radius: 14px;
       font-weight: 700;
+      font-size: 0.95rem;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.2s, transform 0.1s;
     }
 
     .add-task-form button:hover {
       background: var(--woom-dark-red);
+    }
+
+    .add-task-form button:active {
+      transform: scale(0.98);
     }
 
     /* Task List */
@@ -170,34 +181,41 @@
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      max-height: 300px;
+      gap: 12px;
+      max-height: 380px;
       overflow-y: auto;
+      padding-right: 4px;
     }
 
     .task-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
+      padding: 14px 18px;
       background: var(--woom-gray-bg);
-      border-radius: 12px;
+      border-radius: 14px;
       transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .task-item:hover {
+      border-color: var(--border-color);
+      background: #EFEFF4;
     }
 
     .task-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       flex: 1;
       cursor: pointer;
     }
 
     .custom-checkbox {
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       border: 2px solid #C7C7CC;
-      border-radius: 6px;
+      border-radius: 7px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -213,7 +231,7 @@
     .custom-checkbox::after {
       content: '✓';
       color: white;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: bold;
       display: none;
     }
@@ -223,7 +241,7 @@
     }
 
     .task-title {
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: 500;
     }
 
@@ -236,14 +254,17 @@
       background: transparent;
       border: none;
       color: #FF3B30;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       cursor: pointer;
-      opacity: 0.5;
-      padding: 4px;
+      opacity: 0.4;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: opacity 0.2s, background 0.2s;
     }
 
     .delete-btn:hover {
       opacity: 1;
+      background: rgba(255, 59, 48, 0.1);
     }
 
     .victory-card {
@@ -251,17 +272,39 @@
       background: #E8F5E9;
       border: 2px solid #34C759;
       color: #1B5E20;
-      padding: 14px;
-      border-radius: 12px;
+      padding: 16px;
+      border-radius: 14px;
       text-align: center;
       font-weight: 700;
-      font-size: 0.95rem;
+      font-size: 1rem;
       animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     @keyframes pop {
       0% { transform: scale(0.8); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Desktop Layout Breakpoint (768px+) */
+    @media (min-width: 768px) {
+      .main-layout {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .map-container {
+        height: 100%;
+        min-height: 480px;
+        border-bottom: none;
+        border-right: 2px solid var(--border-color);
+      }
+
+      .content {
+        padding: 32px;
+      }
+
+      .task-list {
+        max-height: 360px;
+      }
     }
   </style>
 </head>
@@ -276,80 +319,70 @@
     <div class="stage-subtitle" id="stageTitle">Loading Stage...</div>
   </header>
 
-  <!-- Interactive Map with Winding Road -->
-  <div class="map-container">
-    <svg class="map-svg" viewBox="0 0 400 240" preserveAspectRatio="none">
-      <!-- Winding Road Background Track -->
-      <path id="roadPath" d="M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" 
-            fill="none" stroke="#757575" stroke-width="22" stroke-linecap="round"/>
-      <!-- Road Dash Line -->
-      <path id="roadLine" d="M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" 
-            fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="6,6" stroke-linecap="round"/>
-      
-      <!-- Start Marker -->
-      <circle id="startCircle" cx="30" cy="200" r="10" fill="#4CAF50" />
-      <text id="startText" x="30" y="222" font-size="10" font-weight="bold" text-anchor="middle" fill="#2E7D32">START</text>
-
-      <!-- Finish Marker -->
-      <circle id="finishCircle" cx="370" cy="40" r="12" fill="#E30613" />
-      <text id="finishText" x="370" y="24" font-size="11" font-weight="bold" text-anchor="middle" fill="#E30613">FINISH 🏁</text>
-    </svg>
-
-    <!-- Woom Bike Graphic -->
-    <div class="bike-marker" id="bikeMarker">
-      <svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Rear Wheel -->
-        <circle cx="24" cy="54" r="18" stroke="#222" stroke-width="3.5" fill="none"/>
-        <circle cx="24" cy="54" r="15" stroke="#CCC" stroke-width="1.5" fill="none"/>
-        <circle cx="24" cy="54" r="3" fill="#666"/>
+  <div class="main-layout">
+    <!-- Interactive Map Viewport -->
+    <div class="map-container">
+      <svg class="map-svg" viewBox="0 0 400 240" preserveAspectRatio="none">
+        <path id="roadPath" d="M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" 
+              fill="none" stroke="#757575" stroke-width="22" stroke-linecap="round"/>
+        <path id="roadLine" d="M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" 
+              fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="6,6" stroke-linecap="round"/>
         
-        <!-- Front Wheel -->
-        <circle cx="96" cy="54" r="18" stroke="#222" stroke-width="3.5" fill="none"/>
-        <circle cx="96" cy="54" r="15" stroke="#CCC" stroke-width="1.5" fill="none"/>
-        <circle cx="96" cy="54" r="3" fill="#666"/>
+        <circle id="startCircle" cx="30" cy="200" r="10" fill="#4CAF50" />
+        <text id="startText" x="30" y="222" font-size="10" font-weight="bold" text-anchor="middle" fill="#2E7D32">START</text>
 
-        <!-- Black Chain Guard & Pedals -->
-        <rect x="24" y="50" width="32" height="8" rx="4" fill="#1D1D1F"/>
-        <circle cx="52" cy="54" r="4" fill="#888"/>
-        <rect x="48" y="52" width="8" height="4" fill="#1D1D1F"/>
-
-        <!-- White Front Fork -->
-        <path d="M96 54L86 24" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
-
-        <!-- Red Main Frame Tube (woom Signature Shape) -->
-        <path d="M24 54L52 54L84 28" stroke="#E30613" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M52 54L52 28" stroke="#E30613" stroke-width="5" stroke-linecap="round"/>
-        
-        <!-- Seatpost & Saddle -->
-        <path d="M52 28L52 22" stroke="#1D1D1F" stroke-width="3"/>
-        <path d="M42 21C46 19 58 19 60 22C60 23 48 24 42 21Z" fill="#1D1D1F"/>
-
-        <!-- Handlebars & Green Right Brake Lever Detail -->
-        <path d="M86 24L84 14L78 12" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="77" cy="11" r="2" fill="#2ECC71"/> <!-- Green Brake Lever -->
-
-        <!-- woom White Logo on Main Tube -->
-        <text x="56" y="47" font-family="sans-serif" font-size="8" font-weight="900" font-style="italic" fill="#FFFFFF" transform="rotate(-38 56 47)">woom</text>
+        <circle id="finishCircle" cx="370" cy="40" r="12" fill="#E30613" />
+        <text id="finishText" x="370" y="24" font-size="11" font-weight="bold" text-anchor="middle" fill="#E30613">FINISH 🏁</text>
       </svg>
+
+      <!-- Woom Bike Graphic -->
+      <div class="bike-marker" id="bikeMarker">
+        <svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="54" r="18" stroke="#222" stroke-width="3.5" fill="none"/>
+          <circle cx="24" cy="54" r="15" stroke="#CCC" stroke-width="1.5" fill="none"/>
+          <circle cx="24" cy="54" r="3" fill="#666"/>
+          
+          <circle cx="96" cy="54" r="18" stroke="#222" stroke-width="3.5" fill="none"/>
+          <circle cx="96" cy="54" r="15" stroke="#CCC" stroke-width="1.5" fill="none"/>
+          <circle cx="96" cy="54" r="3" fill="#666"/>
+
+          <rect x="24" y="50" width="32" height="8" rx="4" fill="#1D1D1F"/>
+          <circle cx="52" cy="54" r="4" fill="#888"/>
+          <rect x="48" y="52" width="8" height="4" fill="#1D1D1F"/>
+
+          <path d="M96 54L86 24" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+
+          <path d="M24 54L52 54L84 28" stroke="#E30613" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M52 54L52 28" stroke="#E30613" stroke-width="5" stroke-linecap="round"/>
+          
+          <path d="M52 28L52 22" stroke="#1D1D1F" stroke-width="3"/>
+          <path d="M42 21C46 19 58 19 60 22C60 23 48 24 42 21Z" fill="#1D1D1F"/>
+
+          <path d="M86 24L84 14L78 12" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="77" cy="11" r="2" fill="#2ECC71"/>
+
+          <text x="56" y="47" font-family="sans-serif" font-size="8" font-weight="900" font-style="italic" fill="#FFFFFF" transform="rotate(-38 56 47)">woom</text>
+        </svg>
+      </div>
     </div>
-  </div>
 
-  <div class="content">
-    <div class="victory-card" id="victoryCard">
-      🎉 Stage Complete! Excellent riding today! 🚲
+    <!-- Task List & Form Section -->
+    <div class="content">
+      <div class="victory-card" id="victoryCard">
+        🎉 Stage Complete! Excellent riding today! 🚲
+      </div>
+
+      <form class="add-task-form" id="addTaskForm">
+        <input type="text" id="taskInput" placeholder="Add a new task..." required />
+        <button type="submit">Add Task</button>
+      </form>
+
+      <ul class="task-list" id="taskList"></ul>
     </div>
-
-    <form class="add-task-form" id="addTaskForm">
-      <input type="text" id="taskInput" placeholder="Add a new task..." required />
-      <button type="submit">Add Task</button>
-    </form>
-
-    <ul class="task-list" id="taskList"></ul>
   </div>
 </div>
 
 <script>
-  // Daily Stage Routes (Unique road path for each day)
   const stageRoutes = [
     { day: "Sunday", name: "Sunday Stage: Sunday Scenic Cruise", path: "M 30,120 C 120,40 280,200 370,120" },
     { day: "Monday", name: "Monday Stage: The Weekly Kickoff S-Curve", path: "M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" },
@@ -360,10 +393,9 @@
     { day: "Saturday", name: "Saturday Stage: Weekend Trail Adventure", path: "M 30,150 Q 120,220 200,120 T 370,90" }
   ];
 
-  const todayIndex = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+  const todayIndex = new Date().getDay();
   const currentStage = stageRoutes[todayIndex];
 
-  // DOM Elements
   const roadPath = document.getElementById('roadPath');
   const roadLine = document.getElementById('roadLine');
   const stageTitle = document.getElementById('stageTitle');
@@ -378,13 +410,11 @@
   const progressText = document.getElementById('progressText');
   const victoryCard = document.getElementById('victoryCard');
 
-  // Load current stage route into SVG
   function setupDailyStage() {
     stageTitle.textContent = currentStage.name;
     roadPath.setAttribute('d', currentStage.path);
     roadLine.setAttribute('d', currentStage.path);
 
-    // Reposition Start & Finish Markers based on Path Endpoints
     const totalLen = roadPath.getTotalLength();
     const startPt = roadPath.getPointAtLength(0);
     const finishPt = roadPath.getPointAtLength(totalLen);
@@ -400,7 +430,6 @@
     finishText.setAttribute('y', Math.max(16, finishPt.y - 16));
   }
 
-  // Tasks Data Management
   const defaultTasks = [
     { id: 1, text: "Review Q3 cycling deck", completed: false },
     { id: 2, text: "Sync with logistics team", completed: false },
@@ -464,7 +493,6 @@
     }
   });
 
-  // Precise Path Alignment & Rotation
   function updateBikePosition() {
     const total = tasks.length;
     const completed = tasks.filter(t => t.completed).length;
@@ -473,16 +501,13 @@
     const pathLength = roadPath.getTotalLength();
     const targetLength = pathLength * percentage;
     
-    // Sample current point and a tiny bit ahead to determine tangent angle
     const pt = roadPath.getPointAtLength(targetLength);
     const ptAhead = roadPath.getPointAtLength(Math.min(pathLength, targetLength + 2));
 
-    // Calculate rotation angle in degrees
     const dx = ptAhead.x - pt.x;
     const dy = ptAhead.y - pt.y;
     let angle = Math.atan2(dy, dx) * (180 / Math.PI);
 
-    // Map SVG coordinates (0-400, 0-240) to actual container pixel dimensions
     const svgEl = document.querySelector('.map-svg');
     const rect = svgEl.getBoundingClientRect();
     
@@ -492,7 +517,6 @@
     const pixelX = pt.x * scaleX;
     const pixelY = pt.y * scaleY;
 
-    // Apply smooth coordinate positioning and rotation transform
     bikeMarker.style.left = `${pixelX}px`;
     bikeMarker.style.top = `${pixelY}px`;
     bikeMarker.style.transform = `rotate(${angle}deg)`;
@@ -504,7 +528,6 @@
     return div.innerHTML;
   }
 
-  // Initialization
   setupDailyStage();
   window.addEventListener('resize', updateBikePosition);
   saveAndRender();
