@@ -130,7 +130,7 @@
       height: 38px;
       margin-left: -27px;
       margin-top: -19px;
-      transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
       z-index: 10;
       filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));
       transform-origin: center center;
@@ -344,18 +344,14 @@
         <circle id="startCircle" cx="30" cy="200" r="10" fill="#4CAF50" />
         <text id="startText" x="30" y="222" font-size="10" font-weight="bold" text-anchor="middle" fill="#2E7D32">START</text>
 
-        <!-- Clean Flat Finish Banner (Matching Reference Line Style) -->
-        <g id="finishGroup" transform="translate(350, 10)">
-          <!-- Left & Right Vertical Posts -->
+        <!-- Clean Flat Finish Banner Line -->
+        <g id="finishGroup" transform="translate(320, 10)" style="z-index: 5;">
           <line x1="2" y1="4" x2="2" y2="38" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>
           <line x1="42" y1="4" x2="42" y2="38" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>
-          <!-- Bottom Footing Bars -->
           <line x1="-2" y1="38" x2="6" y2="38" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>
           <line x1="38" y1="38" x2="46" y2="38" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>
           
-          <!-- Banner Card Fill -->
           <rect x="2" y="8" width="40" height="18" rx="3" fill="#FFFFFF" stroke="#1D1D1F" stroke-width="2.5"/>
-          <!-- Bold FINISH Text -->
           <text x="22" y="21" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" font-weight="900" text-anchor="middle" fill="#E30613" letter-spacing="0.8">FINISH</text>
         </g>
       </svg>
@@ -418,15 +414,15 @@
 </div>
 
 <script>
-  // Daily Stage Routes
+  // Daily Stage Routes (Extended endpoint paths to allow victory coasting)
   const stageRoutes = [
-    { day: "Sunday", name: "Sunday Stage: Sunday Scenic Cruise", path: "M 30,120 C 120,40 280,200 370,120" },
-    { day: "Monday", name: "Monday Stage: The Weekly Kickoff S-Curve", path: "M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" },
-    { day: "Tuesday", name: "Tuesday Stage: Twin Peaks Climb", path: "M 30,180 Q 110,30 190,160 T 370,40" },
-    { day: "Wednesday", name: "Wednesday Stage: Midweek Mountain Loop", path: "M 30,140 C 100,220 150,20 230,180 C 300,240 320,40 370,50" },
-    { day: "Thursday", name: "Thursday Stage: Rolling Hills Sprint", path: "M 30,80 C 130,200 180,40 270,180 C 330,220 350,70 370,60" },
-    { day: "Friday", name: "Friday Stage: The Weekend Finish Sprint", path: "M 30,200 C 100,200 180,180 250,110 C 310,50 340,50 370,40" },
-    { day: "Saturday", name: "Saturday Stage: Weekend Trail Adventure", path: "M 30,150 Q 120,220 200,120 T 370,90" }
+    { day: "Sunday", name: "Sunday Stage: Sunday Scenic Cruise", path: "M 30,120 C 120,40 280,200 380,120" },
+    { day: "Monday", name: "Monday Stage: The Weekly Kickoff S-Curve", path: "M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 380,40" },
+    { day: "Tuesday", name: "Tuesday Stage: Twin Peaks Climb", path: "M 30,180 Q 110,30 190,160 T 380,40" },
+    { day: "Wednesday", name: "Wednesday Stage: Midweek Mountain Loop", path: "M 30,140 C 100,220 150,20 230,180 C 300,240 320,40 380,50" },
+    { day: "Thursday", name: "Thursday Stage: Rolling Hills Sprint", path: "M 30,80 C 130,200 180,40 270,180 C 330,220 350,70 380,60" },
+    { day: "Friday", name: "Friday Stage: The Weekend Finish Sprint", path: "M 30,200 C 100,200 180,180 250,110 C 310,50 340,50 380,40" },
+    { day: "Saturday", name: "Saturday Stage: Weekend Trail Adventure", path: "M 30,150 Q 120,220 200,120 T 380,90" }
   ];
 
   const todayIndex = new Date().getDay();
@@ -454,14 +450,15 @@
 
     const totalLen = roadPath.getTotalLength();
     const startPt = roadPath.getPointAtLength(0);
-    const finishPt = roadPath.getPointAtLength(totalLen);
+    
+    // Position Finish Line Banner at 85% mark so 100% completion drives past it
+    const finishPt = roadPath.getPointAtLength(totalLen * 0.85);
 
     startCircle.setAttribute('cx', startPt.x);
     startCircle.setAttribute('cy', startPt.y);
     startText.setAttribute('x', startPt.x);
     startText.setAttribute('y', Math.min(230, startPt.y + 22));
 
-    // Position Banner centered precisely at finish line destination
     finishGroup.setAttribute('transform', `translate(${finishPt.x - 22}, ${finishPt.y - 20})`);
   }
 
@@ -568,6 +565,8 @@
   function updateBikePosition() {
     const total = tasks.length;
     const completed = tasks.filter(t => t.completed).length;
+    
+    // Scale progress so 100% drives cleanly past the 85% finish line
     const percentage = total === 0 ? 0 : completed / total;
 
     const pathLength = roadPath.getTotalLength();
