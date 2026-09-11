@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>woom Workday Tour</title>
+  <style>
+    :root {
+      --woom-red: #E30613;
+      --woom-dark-red: #B5040F;
+      --woom-gray-bg: #F8F9FA;
+      --woom-card-bg: #FFFFFF;
+      --text-main: #1D1D1F;
+      --text-muted: #6E6E73;
+      --border-color: #E5E5EA;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--woom-gray-bg);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--woom-card-bg);
+      border-radius: 24px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Header */
+    header {
+      background-color: var(--woom-red);
+      color: white;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    header h1 span {
+      background: white;
+      color: var(--woom-red);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 900;
+      text-transform: lowercase;
+    }
+
+    .badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Map Track Viewport */
+    .map-container {
+      position: relative;
+      background: #E8F5E9; /* Soft grassy landscape background */
+      height: 220px;
+      width: 100%;
+      border-bottom: 2px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .map-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Bike Icon on Road */
+    .bike-marker {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      margin-left: -16px;
+      margin-top: -16px;
+      transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 10;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+    }
+
+    /* Main Content & Add Task */
+    .content {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .add-task-form {
+      display: flex;
+      gap: 8px;
+    }
+
+    .add-task-form input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .add-task-form input:focus {
+      border-color: var(--woom-red);
+    }
+
+    .add-task-form button {
+      background: var(--woom-red);
+      color: white;
+      border: none;
+      padding: 0 18px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .add-task-form button:hover {
+      background: var(--woom-dark-red);
+    }
+
+    /* Task List */
+    .task-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--woom-gray-bg);
+      border-radius: 12px;
+      transition: all 0.2s;
+    }
+
+    .task-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .custom-checkbox {
+      width: 22px;
+      height: 22px;
+      border: 2px solid #C7C7CC;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      transition: all 0.2s;
+    }
+
+    .task-item.completed .custom-checkbox {
+      background: var(--woom-red);
+      border-color: var(--woom-red);
+    }
+
+    .custom-checkbox::after {
+      content: '✓';
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .task-item.completed .custom-checkbox::after {
+      display: block;
+    }
+
+    .task-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .task-item.completed .task-title {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .delete-btn {
+      background: transparent;
+      border: none;
+      color: #FF3B30;
+      font-size: 1.1rem;
+      cursor: pointer;
+      opacity: 0.5;
+      padding: 4px;
+      transition: opacity 0.2s;
+    }
+
+    .delete-btn:hover {
+      opacity: 1;
+    }
+
+    /* Celebration Banner */
+    .victory-card {
+      display: none;
+      background: #E8F5E9;
+      border: 2px solid #34C759;
+      color: #1B5E20;
+      padding: 14px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <header>
+    <h1><span>woom</span> Workday Tour</h1>
+    <div class="badge" id="progressText">0 / 0 Done</div>
+  </header>
+
+  <!-- Interactive Map with Winding Road -->
+  <div class="map-container">
+    <svg class="map-svg" viewBox="0 0 400 200" preserveAspectRatio="none">
+      <!-- Winding Road Background Track -->
+      <path id="roadPath" d="M 30,170 C 120,170 120,30 200,100 C 280,170 280,30 370,30" 
+            fill="none" stroke="#757575" stroke-width="20" stroke-linecap="round"/>
+      <!-- Road Center Line -->
+      <path d="M 30,170 C 120,170 120,30 200,100 C 280,170 280,30 370,30" 
+            fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="6,6" stroke-linecap="round"/>
+      
+      <!-- Start Marker -->
+      <circle cx="30" cy="170" r="10" fill="#4CAF50" />
+      <text x="30" y="195" font-size="10" font-weight="bold" text-anchor="middle" fill="#2E7D32">START</text>
+
+      <!-- Finish Flag Marker -->
+      <circle cx="370" cy="30" r="12" fill="#E30613" />
+      <text x="370" y="18" font-size="12" font-weight="bold" text-anchor="middle" fill="#E30613">FINISH 🏁</text>
+    </svg>
+
+    <!-- Woom Red Bike Icon Overlay -->
+    <div class="bike-marker" id="bikeMarker">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="5" cy="17" r="4" stroke="#1D1D1F" stroke-width="2" fill="white"/>
+        <circle cx="19" cy="17" r="4" stroke="#1D1D1F" stroke-width="2" fill="white"/>
+        <path d="M5 17L10 10L14 17M10 10L17 10L19 17M10 10L8 6H5" stroke="#E30613" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="8" cy="4" r="2" fill="#E30613"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="victory-card" id="victoryCard">
+      🎉 Stage Complete! You pedaled all the way to the finish line! 🚲
+    </div>
+
+    <form class="add-task-form" id="addTaskForm">
+      <input type="text" id="taskInput" placeholder="Add a new task..." required />
+      <button type="submit">Add Task</button>
+    </form>
+
+    <ul class="task-list" id="taskList"></ul>
+  </div>
+</div>
+
+<script>
+  // Initial default tasks if empty
+  const defaultTasks = [
+    { id: 1, text: "Review Q3 cycling deck", completed: false },
+    { id: 2, text: "Sync with logistics team", completed: false },
+    { id: 3, text: "Test new accessories lineup", completed: false },
+    { id: 4, text: "Prepare customer feedback notes", completed: false }
+  ];
+
+  let tasks = JSON.parse(localStorage.getItem('woom_tasks')) || defaultTasks;
+
+  const taskListEl = document.getElementById('taskList');
+  const addTaskForm = document.getElementById('addTaskForm');
+  const taskInput = document.getElementById('taskInput');
+  const progressText = document.getElementById('progressText');
+  const bikeMarker = document.getElementById('bikeMarker');
+  const roadPath = document.getElementById('roadPath');
+  const victoryCard = document.getElementById('victoryCard');
+
+  function saveAndRender() {
+    localStorage.setItem('woom_tasks', JSON.stringify(tasks));
+    renderTasks();
+    updateBikePosition();
+  }
+
+  function renderTasks() {
+    taskListEl.innerHTML = '';
+    
+    tasks.forEach(task => {
+      const li = document.createElement('li');
+      li.className = `task-item ${task.completed ? 'completed' : ''}`;
+      
+      li.innerHTML = `
+        <div class="task-left" onclick="toggleTask(${task.id})">
+          <div class="custom-checkbox"></div>
+          <span class="task-title">${escapeHtml(task.text)}</span>
+        </div>
+        <button class="delete-btn" onclick="deleteTask(${task.id})">✕</button>
+      `;
+      
+      taskListEl.appendChild(li);
+    });
+
+    const completedCount = tasks.filter(t => t.completed).length;
+    progressText.textContent = `${completedCount} / ${tasks.length} Done`;
+
+    // Toggle victory banner
+    if (tasks.length > 0 && completedCount === tasks.length) {
+      victoryCard.style.display = 'block';
+    } else {
+      victoryCard.style.display = 'none';
+    }
+  }
+
+  function toggleTask(id) {
+    tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+    saveAndRender();
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    saveAndRender();
+  }
+
+  addTaskForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = taskInput.value.trim();
+    if (text) {
+      tasks.push({ id: Date.now(), text, completed: false });
+      taskInput.value = '';
+      saveAndRender();
+    }
+  });
+
+  // Smooth SVG Path Calculation for Bike Movement
+  function updateBikePosition() {
+    const total = tasks.length;
+    const completed = tasks.filter(t => t.completed).length;
+    const percentage = total === 0 ? 0 : completed / total;
+
+    // Get length of the SVG winding path
+    const pathLength = roadPath.getTotalLength();
+    const targetPoint = roadPath.getPointAtLength(pathLength * percentage);
+
+    // Get SVG container scaling to align CSS absolute positioning
+    const svgEl = document.querySelector('.map-svg');
+    const rect = svgEl.getBoundingClientRect();
+    
+    // Scale SVG 0-400 (x) and 0-200 (y) coordinates to pixel dimensions
+    const scaleX = rect.width / 400;
+    const scaleY = rect.height / 200;
+
+    const pixelX = targetPoint.x * scaleX;
+    const pixelY = targetPoint.y * scaleY;
+
+    // Smoothly transition bike position
+    bikeMarker.style.left = `${pixelX}px`;
+    bikeMarker.style.top = `${pixelY}px`;
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Initial setup & listener for window resize to adjust responsive bike path
+  window.addEventListener('resize', updateBikePosition);
+  saveAndRender();
+</script>
+
+</body>
+</html>
