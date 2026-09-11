@@ -108,34 +108,18 @@
       font-weight: 600;
     }
 
-    /* Map container displaying the illustrated background artwork */
     .map-container {
       position: relative;
-      background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80');
-      background-size: cover;
-      background-position: center;
-      height: 260px;
+      background: #7DD3FC;
+      height: 280px;
       width: 100%;
       border-bottom: 2px solid var(--border-color);
       overflow: hidden;
     }
 
-    /* Overlay tinted layer to ensure road visibility */
-    .map-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.15);
-      pointer-events: none;
-    }
-
     .map-svg {
       width: 100%;
       height: 100%;
-      position: relative;
-      z-index: 2;
     }
 
     .bike-marker {
@@ -148,7 +132,7 @@
                   top 0.7s cubic-bezier(0.25, 1, 0.5, 1), 
                   transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
       z-index: 10;
-      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35));
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));
       transform-origin: center center;
     }
 
@@ -340,7 +324,7 @@
 
     @keyframes fall {
       0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(240px) rotate(720deg); opacity: 0; }
+      100% { transform: translateY(260px) rotate(720deg); opacity: 0; }
     }
 
     @keyframes pop {
@@ -362,9 +346,7 @@
 
   <div class="main-layout">
     <div class="map-container" id="mapContainer">
-      <div class="map-overlay"></div>
-      
-      <svg class="map-svg" viewBox="0 0 400 240" preserveAspectRatio="none">
+      <svg class="map-svg" viewBox="0 0 400 280" preserveAspectRatio="none">
         <defs>
           <pattern id="chequered" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
             <rect width="4" height="4" fill="#1D1D1F"/>
@@ -372,24 +354,79 @@
             <rect y="4" width="4" height="4" fill="#FFFFFF"/>
             <rect x="4" y="4" width="4" height="4" fill="#1D1D1F"/>
           </pattern>
+
+          <!-- Sky Gradient -->
+          <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#38BDF8"/>
+            <stop offset="60%" stop-color="#BAE6FD"/>
+            <stop offset="100%" stop-color="#E0F2FE"/>
+          </linearGradient>
+
+          <!-- Dirt Track Pattern fill for realistic road texture -->
+          <linearGradient id="roadFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#D97706"/>
+            <stop offset="100%" stop-color="#B45309"/>
+          </linearGradient>
         </defs>
 
-        <!-- Winding Paved Road Path overlay -->
-        <path id="roadPath" d="" fill="none" stroke="#334155" stroke-width="18" stroke-linecap="round"/>
-        <path id="roadLine" d="" fill="none" stroke="#F8FAFC" stroke-width="2" stroke-dasharray="6,6" stroke-linecap="round"/>
+        <!-- Sky Background -->
+        <rect width="400" height="280" fill="url(#skyGrad)"/>
 
-        <!-- Start Indicator -->
-        <circle id="startCircle" cx="30" cy="200" r="10" fill="#22C55E" />
-        <text id="startText" x="30" y="222" font-size="10" font-weight="bold" text-anchor="middle" fill="#FFFFFF" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.8))">START</text>
+        <!-- Clouds -->
+        <g fill="#FFFFFF" opacity="0.85">
+          <path d="M 20,40 Q 30,25 45,35 Q 60,20 75,35 A 12,12 0 0,1 20,40 Z"/>
+          <path d="M 280,30 Q 295,15 310,25 Q 325,10 340,25 A 12,12 0 0,1 280,30 Z"/>
+        </g>
 
-        <!-- Chequered Finish Indicator -->
+        <!-- Layer 1: Background Distant Snow Mountain Peaks -->
+        <g id="distantMountains">
+          <!-- Left Sharp Peak -->
+          <polygon points="-10,180 60,40 130,180" fill="#64748B"/>
+          <polygon points="60,40 45,75 60,65 72,80" fill="#FFFFFF"/> <!-- Snow cap -->
+
+          <!-- Far Right Peak -->
+          <polygon points="270,180 340,55 410,180" fill="#475569"/>
+          <polygon points="340,55 325,85 340,78 355,90" fill="#FFFFFF"/> <!-- Snow cap -->
+        </g>
+
+        <!-- Layer 2: Main Rolling Green Hill (Perspective Centerpiece) -->
+        <path d="M -20,280 Q 200,40 420,280 Z" fill="#6EE7B7"/>
+        <path d="M -20,280 Q 200,70 420,280 Z" fill="#34D399"/>
+
+        <!-- Layer 3: Pine Trees on the Hill Tops -->
+        <g fill="#065F46">
+          <polygon points="120,95 126,75 132,95"/>
+          <polygon points="130,90 135,70 140,90"/>
+          <polygon points="260,95 266,75 272,95"/>
+          <polygon points="270,90 275,70 280,90"/>
+          <polygon points="20,180 28,150 36,180"/>
+          <polygon points="370,180 378,150 386,180"/>
+        </g>
+
+        <!-- Layer 4: Grey Boulders & Rocks along hillsides -->
+        <g fill="#94A3B8">
+          <ellipse cx="100" cy="120" rx="8" ry="5"/>
+          <ellipse cx="300" cy="130" rx="10" ry="6"/>
+          <ellipse cx="80" cy="220" rx="14" ry="8"/>
+          <ellipse cx="330" cy="210" rx="12" ry="7"/>
+        </g>
+
+        <!-- Layer 5: Perspective Winding Road (Thick dirt/asphalt track) -->
+        <path id="roadPath" d="" fill="none" stroke="url(#roadFill)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+        <path id="roadLine" d="" fill="none" stroke="#FEF3C7" stroke-width="2.5" stroke-dasharray="6,6" stroke-linecap="round"/>
+
+        <!-- Start Line Indicator (Bottom Center) -->
+        <circle id="startCircle" cx="200" cy="250" r="10" fill="#22C55E" />
+        <text id="startText" x="200" y="272" font-size="10" font-weight="bold" text-anchor="middle" fill="#15803D">START</text>
+
+        <!-- Finish Banner Arch (At the top peak horizon) -->
         <g id="finishGroup">
-          <circle id="finishCircle" cx="370" cy="40" r="14" fill="url(#chequered)" stroke="#E30613" stroke-width="2"/>
-          <text id="finishText" x="370" y="18" font-size="11" font-weight="bold" text-anchor="middle" fill="#FFFFFF" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.8))">FINISH 🏁</text>
+          <circle id="finishCircle" cx="200" cy="70" r="13" fill="url(#chequered)" stroke="#E30613" stroke-width="2"/>
+          <text id="finishText" x="200" y="50" font-size="11" font-weight="bold" text-anchor="middle" fill="#E30613">FINISH 🏁</text>
         </g>
       </svg>
 
-      <!-- Bike Graphic -->
+      <!-- Bike Marker Overlay -->
       <div class="bike-marker" id="bikeMarker">
         <svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="24" cy="54" r="18" stroke="#222" stroke-width="3.5" fill="none"/>
@@ -444,50 +481,15 @@
 </div>
 
 <script>
-  // Daily Stage Routes with specific background images matching mountain or forest themes
+  // Perspective Snake Routes climbing up the hill
   const stageRoutes = [
-    { 
-      day: "Sunday", 
-      name: "Sunday Stage: Sunday Scenic Cruise", 
-      bg: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80", 
-      path: "M 30,190 C 120,130 280,220 370,130" 
-    },
-    { 
-      day: "Monday", 
-      name: "Monday Stage: Weekly Kickoff Mountain Pass", 
-      bg: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80", 
-      path: "M 30,200 C 120,210 110,130 200,160 C 280,190 280,100 370,110" 
-    },
-    { 
-      day: "Tuesday", 
-      name: "Tuesday Stage: Twin Peaks Climb", 
-      bg: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80", 
-      path: "M 30,200 Q 110,140 190,190 T 370,120" 
-    },
-    { 
-      day: "Wednesday", 
-      name: "Wednesday Stage: Midweek Mountain Loop", 
-      bg: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80", 
-      path: "M 30,190 C 100,220 150,130 230,190 C 300,230 320,120 370,130" 
-    },
-    { 
-      day: "Thursday", 
-      name: "Thursday Stage: Rolling Hills Sprint", 
-      bg: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80", 
-      path: "M 30,170 C 130,220 180,140 270,190 C 330,220 350,140 370,140" 
-    },
-    { 
-      day: "Friday", 
-      name: "Friday Stage: Weekend Finish Sprint", 
-      bg: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80", 
-      path: "M 30,200 C 100,200 180,180 250,150 C 310,120 340,130 370,120" 
-    },
-    { 
-      day: "Saturday", 
-      name: "Saturday Stage: Weekend Trail Adventure", 
-      bg: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80", 
-      path: "M 30,180 Q 120,220 200,160 T 370,140" 
-    }
+    { day: "Sunday", name: "Sunday Stage: Scenic Mountain Pass", path: "M 200,250 C 130,220 140,180 230,160 C 290,140 250,100 200,70" },
+    { day: "Monday", name: "Monday Stage: Weekly Kickoff Switchbacks", path: "M 200,250 C 100,230 110,190 250,170 C 310,140 130,110 200,70" },
+    { day: "Tuesday", name: "Tuesday Stage: Twin Peaks Summit Climb", path: "M 200,250 C 270,220 260,180 160,150 C 110,130 280,95 200,70" },
+    { day: "Wednesday", name: "Wednesday Stage: Midweek Hairpin Loop", path: "M 200,250 C 90,220 100,170 280,160 C 320,130 140,90 200,70" },
+    { day: "Thursday", name: "Thursday Stage: Rolling Hills Ascent", path: "M 200,250 C 280,230 250,180 150,160 C 110,130 250,90 200,70" },
+    { day: "Friday", name: "Friday Stage: Weekend Summit Sprint", path: "M 200,250 C 120,210 280,190 140,140 C 120,110 260,90 200,70" },
+    { day: "Saturday", name: "Saturday Stage: Weekend Trail Expedition", path: "M 200,250 C 260,210 130,170 270,130 C 290,100 160,85 200,70" }
   ];
 
   const todayIndex = new Date().getDay();
@@ -511,8 +513,6 @@
 
   function setupDailyStage() {
     stageTitle.textContent = currentStage.name;
-    mapContainer.style.backgroundImage = `url('${currentStage.bg}')`;
-
     roadPath.setAttribute('d', currentStage.path);
     roadLine.setAttribute('d', currentStage.path);
 
@@ -523,12 +523,12 @@
     startCircle.setAttribute('cx', startPt.x);
     startCircle.setAttribute('cy', startPt.y);
     startText.setAttribute('x', startPt.x);
-    startText.setAttribute('y', Math.min(235, startPt.y + 20));
+    startText.setAttribute('y', Math.min(275, startPt.y + 22));
 
     finishCircle.setAttribute('cx', finishPt.x);
     finishCircle.setAttribute('cy', finishPt.y);
     finishText.setAttribute('x', finishPt.x);
-    finishText.setAttribute('y', Math.max(16, finishPt.y - 16));
+    finishText.setAttribute('y', Math.max(16, finishPt.y - 18));
   }
 
   const defaultTasks = [
@@ -663,18 +663,21 @@
     const dy = ptAhead.y - pt.y;
     let angle = Math.atan2(dy, dx) * (180 / Math.PI);
 
+    // Scale bike size down as it travels further up the hill to enhance depth
+    const scaleFactor = 1 - (percentage * 0.35); 
+
     const svgEl = document.querySelector('.map-svg');
     const rect = svgEl.getBoundingClientRect();
     
     const scaleX = rect.width / 400;
-    const scaleY = rect.height / 240;
+    const scaleY = rect.height / 280;
 
     const pixelX = pt.x * scaleX;
     const pixelY = pt.y * scaleY;
 
     bikeMarker.style.left = `${pixelX}px`;
     bikeMarker.style.top = `${pixelY}px`;
-    bikeMarker.style.transform = `rotate(${angle}deg)`;
+    bikeMarker.style.transform = `scale(${scaleFactor}) rotate(${angle}deg)`;
   }
 
   function escapeHtml(text) {
