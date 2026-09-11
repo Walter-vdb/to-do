@@ -136,18 +136,6 @@
       transform-origin: center center;
     }
 
-    /* Finish Banner Graphic Overlay */
-    .finish-banner-marker {
-      position: absolute;
-      width: 50px;
-      height: 50px;
-      margin-left: -25px;
-      margin-top: -38px;
-      z-index: 8;
-      pointer-events: none;
-      filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2));
-    }
-
     /* Content & Left Panel */
     .content-left {
       padding: 20px;
@@ -190,7 +178,7 @@
       background: var(--woom-dark-red);
     }
 
-    /* Task List */
+    /* Animated Task List Container */
     .task-list {
       list-style: none;
       position: relative;
@@ -352,32 +340,25 @@
         <path id="roadLine" d="M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" 
               fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="6,6" stroke-linecap="round"/>
         
+        <!-- Start Marker -->
         <circle id="startCircle" cx="30" cy="200" r="10" fill="#4CAF50" />
         <text id="startText" x="30" y="222" font-size="10" font-weight="bold" text-anchor="middle" fill="#2E7D32">START</text>
+
+        <!-- Custom Illustrated Finish Banner Arch -->
+        <g id="finishGroup" transform="translate(350, 10)">
+          <!-- Banner Container Shadow/Backdrop -->
+          <path d="M 2 8 C 18 4, 22 4, 38 8 L 38 38 C 22 34, 18 34, 2 38 Z" fill="#FFFFFF" stroke="#1D1D1F" stroke-width="2.5" stroke-linejoin="round"/>
+          <!-- Top Finish Header Block -->
+          <path d="M 3 8 C 18 4, 22 4, 37 8 L 37 20 C 22 16, 18 16, 3 20 Z" fill="#FFFFFF"/>
+          <!-- Red Stripe Feature -->
+          <path d="M 3 30 C 18 26, 22 26, 37 30 L 37 33 C 22 29, 18 29, 3 33 Z" fill="#E30613"/>
+          <!-- Text Label -->
+          <text x="20" y="16" font-family="Arial, sans-serif" font-size="7.5" font-weight="900" text-anchor="middle" fill="#E30613" letter-spacing="0.5">FINISH</text>
+          <!-- Side Pillars -->
+          <line x1="2" y1="8" x2="2" y2="42" stroke="#1D1D1F" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="38" y1="8" x2="38" y2="42" stroke="#1D1D1F" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
       </svg>
-
-      <!-- Custom SVG Finish Banner Marker -->
-      <div class="finish-banner-marker" id="finishBannerMarker">
-        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- White Banner Fill with Curved Top -->
-          <path d="M 15,20 Q 50,14 85,20 L 85,82 Q 50,78 15,82 Z" fill="#FFFFFF" />
-          
-          <!-- Red Stripe Across Bottom -->
-          <path d="M 15,64 Q 50,60 85,64 L 85,73 Q 50,69 15,73 Z" fill="#FF5252" />
-          
-          <!-- Outer Dark Blue Outline Arch -->
-          <path d="M 15,20 Q 50,14 85,20 L 85,82 Q 50,78 15,82 Z" stroke="#0B2B6B" stroke-width="7" stroke-linejoin="round" />
-          
-          <!-- Horizontal Inner Blue Lines -->
-          <path d="M 15,40 Q 50,34 85,40" stroke="#0B2B6B" stroke-width="5" />
-          <path d="M 15,64 Q 50,58 85,64" stroke="#0B2B6B" stroke-width="5" />
-          <path d="M 15,73 Q 50,67 85,73" stroke="#0B2B6B" stroke-width="5" />
-          <path d="M 10,82 L 90,82" stroke="#0B2B6B" stroke-width="7" stroke-linecap="round" />
-
-          <!-- Bold Red FINISH Text -->
-          <text x="50" y="34" font-family="-apple-system, Arial, sans-serif" font-size="17" font-weight="900" fill="#FF5252" text-anchor="middle">FINISH</text>
-        </svg>
-      </div>
 
       <!-- Woom Bike Graphic -->
       <div class="bike-marker" id="bikeMarker">
@@ -457,7 +438,7 @@
   const stageTitle = document.getElementById('stageTitle');
   const startCircle = document.getElementById('startCircle');
   const startText = document.getElementById('startText');
-  const finishBannerMarker = document.getElementById('finishBannerMarker');
+  const finishGroup = document.getElementById('finishGroup');
   const bikeMarker = document.getElementById('bikeMarker');
   const taskListEl = document.getElementById('taskList');
   const addTaskForm = document.getElementById('addTaskForm');
@@ -471,31 +452,17 @@
     roadPath.setAttribute('d', currentStage.path);
     roadLine.setAttribute('d', currentStage.path);
 
+    const totalLen = roadPath.getTotalLength();
     const startPt = roadPath.getPointAtLength(0);
+    const finishPt = roadPath.getPointAtLength(totalLen);
+
     startCircle.setAttribute('cx', startPt.x);
     startCircle.setAttribute('cy', startPt.y);
     startText.setAttribute('x', startPt.x);
     startText.setAttribute('y', Math.min(230, startPt.y + 22));
 
-    positionFinishBanner();
-  }
-
-  // Positions the Finish Banner SVG exact at the end of the day's route
-  function positionFinishBanner() {
-    const totalLen = roadPath.getTotalLength();
-    const finishPt = roadPath.getPointAtLength(totalLen);
-
-    const svgEl = document.querySelector('.map-svg');
-    const rect = svgEl.getBoundingClientRect();
-
-    const scaleX = rect.width / 400;
-    const scaleY = rect.height / 240;
-
-    const pixelX = finishPt.x * scaleX;
-    const pixelY = finishPt.y * scaleY;
-
-    finishBannerMarker.style.left = `${pixelX}px`;
-    finishBannerMarker.style.top = `${pixelY}px`;
+    // Position Finish Arch centered at path destination
+    finishGroup.setAttribute('transform', `translate(${finishPt.x - 20}, ${finishPt.y - 28})`);
   }
 
   // Tasks Data
@@ -634,10 +601,7 @@
   }
 
   setupDailyStage();
-  window.addEventListener('resize', () => {
-    positionFinishBanner();
-    updateBikePosition();
-  });
+  window.addEventListener('resize', updateBikePosition);
   saveAndRender();
 </script>
 
