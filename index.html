@@ -8,7 +8,7 @@
     :root {
       --woom-red: #E30613;
       --woom-dark-red: #B5040F;
-      --woom-gray-bg: #F8F9FA;
+      --woom-gray-bg: #F0F4F8;
       --woom-card-bg: #FFFFFF;
       --text-main: #1D1D1F;
       --text-muted: #6E6E73;
@@ -24,6 +24,8 @@
 
     body {
       background-color: var(--woom-gray-bg);
+      background-image: radial-gradient(#CBD5E1 1px, transparent 1px);
+      background-size: 20px 20px;
       color: var(--text-main);
       display: flex;
       justify-content: center;
@@ -37,7 +39,7 @@
       max-width: 480px;
       background: var(--woom-card-bg);
       border-radius: 24px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -45,7 +47,6 @@
       transition: max-width 0.3s ease;
     }
 
-    /* Desktop Responsive Layout */
     @media (min-width: 800px) {
       .app-container {
         max-width: 880px;
@@ -70,7 +71,6 @@
       }
     }
 
-    /* Header */
     header {
       background-color: var(--woom-red);
       color: white;
@@ -108,11 +108,10 @@
       font-weight: 600;
     }
 
-    /* Map Track Viewport */
     .map-container {
       position: relative;
-      background: #E8F5E9;
-      height: 240px;
+      background: linear-gradient(180deg, #E0F2FE 0%, #DCFCE7 100%);
+      height: 250px;
       width: 100%;
       border-bottom: 2px solid var(--border-color);
       overflow: hidden;
@@ -123,7 +122,6 @@
       height: 100%;
     }
 
-    /* Bike Icon Overlay */
     .bike-marker {
       position: absolute;
       width: 54px;
@@ -138,7 +136,6 @@
       transform-origin: center center;
     }
 
-    /* Content & Left Panel */
     .content-left {
       padding: 20px;
       display: flex;
@@ -180,7 +177,6 @@
       background: var(--woom-dark-red);
     }
 
-    /* Animated Task List Container */
     .task-list {
       list-style: none;
       position: relative;
@@ -269,9 +265,9 @@
 
     .victory-card {
       display: none;
-      background: #E8F5E9;
-      border: 2px solid #34C759;
-      color: #1B5E20;
+      background: #DCFCE7;
+      border: 2px solid #16A34A;
+      color: #14532D;
       padding: 14px;
       border-radius: 12px;
       text-align: center;
@@ -280,7 +276,6 @@
       animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* Quick Notes Section */
     .notes-container {
       padding: 16px 20px 20px 20px;
       border-top: 2px solid var(--border-color);
@@ -317,6 +312,22 @@
       border-color: var(--woom-red);
     }
 
+    /* Confetti Particle Style */
+    .confetti {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      z-index: 100;
+      pointer-events: none;
+      animation: fall 2.5s ease-out forwards;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(220px) rotate(720deg); opacity: 0; }
+    }
+
     @keyframes pop {
       0% { transform: scale(0.8); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
@@ -334,25 +345,51 @@
     <div class="stage-subtitle" id="stageTitle">Loading Stage...</div>
   </header>
 
-  <!-- Main Grid Layout -->
   <div class="main-layout">
     
-    <!-- Interactive Map -->
-    <div class="map-container">
+    <!-- Interactive Map with Enhanced Visual Background -->
+    <div class="map-container" id="mapContainer">
       <svg class="map-svg" viewBox="0 0 400 240" preserveAspectRatio="none">
+        <defs>
+          <pattern id="chequered" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <rect width="4" height="4" fill="#1D1D1F"/>
+            <rect x="4" width="4" height="4" fill="#FFFFFF"/>
+            <rect y="4" width="4" height="4" fill="#FFFFFF"/>
+            <rect x="4" y="4" width="4" height="4" fill="#1D1D1F"/>
+          </pattern>
+        </defs>
+
+        <!-- Decorative Background Trees -->
+        <g fill="#A7F3D0" opacity="0.7">
+          <circle cx="50" cy="50" r="18"/>
+          <circle cx="160" cy="210" r="14"/>
+          <circle cx="310" cy="180" r="16"/>
+        </g>
+        
+        <!-- Clouds -->
+        <g fill="#FFFFFF" opacity="0.6">
+          <path d="M 80,30 Q 90,20 100,30 Q 110,20 120,30 A 10,10 0 0,1 80,30 Z"/>
+          <path d="M 260,25 Q 270,15 280,25 Q 290,15 300,25 A 10,10 0 0,1 260,25 Z"/>
+        </g>
+
+        <!-- Track Paths -->
         <path id="roadPath" d="M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" 
-              fill="none" stroke="#757575" stroke-width="22" stroke-linecap="round"/>
+              fill="none" stroke="#64748B" stroke-width="22" stroke-linecap="round"/>
         <path id="roadLine" d="M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" 
               fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="6,6" stroke-linecap="round"/>
         
-        <circle id="startCircle" cx="30" cy="200" r="10" fill="#4CAF50" />
-        <text id="startText" x="30" y="222" font-size="10" font-weight="bold" text-anchor="middle" fill="#2E7D32">START</text>
+        <!-- Start Indicator -->
+        <circle id="startCircle" cx="30" cy="200" r="10" fill="#22C55E" />
+        <text id="startText" x="30" y="222" font-size="10" font-weight="bold" text-anchor="middle" fill="#15803D">START</text>
 
-        <circle id="finishCircle" cx="370" cy="40" r="12" fill="#E30613" />
-        <text id="finishText" x="370" y="24" font-size="11" font-weight="bold" text-anchor="middle" fill="#E30613">FINISH 🏁</text>
+        <!-- Playful Chequered Finish Arch -->
+        <g id="finishGroup">
+          <circle id="finishCircle" cx="370" cy="40" r="14" fill="url(#chequered)" stroke="#E30613" stroke-width="2"/>
+          <text id="finishText" x="370" y="18" font-size="11" font-weight="bold" text-anchor="middle" fill="#E30613">FINISH 🏁</text>
+        </g>
       </svg>
 
-      <!-- Woom Bike Graphic -->
+      <!-- Bike Graphic -->
       <div class="bike-marker" id="bikeMarker">
         <svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="24" cy="54" r="18" stroke="#222" stroke-width="3.5" fill="none"/>
@@ -383,7 +420,7 @@
       </div>
     </div>
 
-    <!-- Left Panel: Task List & Inputs -->
+    <!-- Task Panel -->
     <div class="content-left">
       <div class="victory-card" id="victoryCard">
         🎉 Stage Complete! Excellent riding today! 🚲
@@ -399,7 +436,6 @@
 
   </div>
 
-  <!-- Bottom Section: Quick Notes -->
   <div class="notes-container">
     <div class="notes-header">
       <span>📝 Quick Workday Notes</span>
@@ -410,7 +446,6 @@
 </div>
 
 <script>
-  // Daily Stage Routes
   const stageRoutes = [
     { day: "Sunday", name: "Sunday Stage: Sunday Scenic Cruise", path: "M 30,120 C 120,40 280,200 370,120" },
     { day: "Monday", name: "Monday Stage: The Weekly Kickoff S-Curve", path: "M 30,200 C 120,200 120,40 200,120 C 280,200 280,40 370,40" },
@@ -424,7 +459,6 @@
   const todayIndex = new Date().getDay();
   const currentStage = stageRoutes[todayIndex];
 
-  // DOM Elements
   const roadPath = document.getElementById('roadPath');
   const roadLine = document.getElementById('roadLine');
   const stageTitle = document.getElementById('stageTitle');
@@ -439,6 +473,7 @@
   const progressText = document.getElementById('progressText');
   const victoryCard = document.getElementById('victoryCard');
   const notesArea = document.getElementById('notesArea');
+  const mapContainer = document.getElementById('mapContainer');
 
   function setupDailyStage() {
     stageTitle.textContent = currentStage.name;
@@ -460,7 +495,6 @@
     finishText.setAttribute('y', Math.max(16, finishPt.y - 16));
   }
 
-  // Tasks Data
   const defaultTasks = [
     { id: 1, text: "Review Q3 cycling deck", completed: false },
     { id: 2, text: "Sync with logistics team", completed: false },
@@ -469,8 +503,8 @@
   ];
 
   let tasks = JSON.parse(localStorage.getItem('woom_tasks')) || defaultTasks;
+  let hasTriggeredVictory = false;
 
-  // Notes Data
   notesArea.value = localStorage.getItem('woom_notes') || '';
   notesArea.addEventListener('input', () => {
     localStorage.setItem('woom_notes', notesArea.value);
@@ -482,21 +516,15 @@
     updateBikePosition();
   }
 
-  // Smooth FLIP (First, Last, Invert, Play) Animation for Task Reordering
   function renderTasksWithAnimation() {
-    // Record current positions (First)
     const oldPositions = new Map();
     Array.from(taskListEl.children).forEach(el => {
       const id = el.dataset.id;
-      if (id) {
-        oldPositions.set(id, el.getBoundingClientRect().top);
-      }
+      if (id) oldPositions.set(id, el.getBoundingClientRect().top);
     });
 
-    // Sort tasks: Active first, Completed at bottom
     const sortedTasks = [...tasks].sort((a, b) => a.completed - b.completed);
 
-    // Re-render HTML (Last)
     taskListEl.innerHTML = '';
     sortedTasks.forEach(task => {
       const li = document.createElement('li');
@@ -514,7 +542,6 @@
       taskListEl.appendChild(li);
     });
 
-    // Calculate delta and apply smooth transition (Invert & Play)
     Array.from(taskListEl.children).forEach(el => {
       const id = el.dataset.id;
       const oldTop = oldPositions.get(id);
@@ -524,11 +551,9 @@
         const deltaY = oldTop - newTop;
 
         if (deltaY !== 0) {
-          // Temporarily set element back to old position
           el.style.transform = `translateY(${deltaY}px)`;
           el.style.transition = 'none';
 
-          // Force reflow and animate smoothly to new position
           requestAnimationFrame(() => {
             el.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
             el.style.transform = 'translateY(0)';
@@ -542,8 +567,28 @@
 
     if (tasks.length > 0 && completedCount === tasks.length) {
       victoryCard.style.display = 'block';
+      if (!hasTriggeredVictory) {
+        triggerConfetti();
+        hasTriggeredVictory = true;
+      }
     } else {
       victoryCard.style.display = 'none';
+      hasTriggeredVictory = false;
+    }
+  }
+
+  function triggerConfetti() {
+    const colors = ['#E30613', '#22C55E', '#3B82F6', '#F59E0B', '#EC4899'];
+    for (let i = 0; i < 30; i++) {
+      const p = document.createElement('div');
+      p.className = 'confetti';
+      p.style.left = `${Math.random() * 80 + 10}%`;
+      p.style.top = '10px';
+      p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      p.style.animationDelay = `${Math.random() * 0.5}s`;
+      mapContainer.appendChild(p);
+
+      setTimeout(() => p.remove(), 3000);
     }
   }
 
@@ -602,7 +647,6 @@
     return div.innerHTML;
   }
 
-  // Safe initialization after DOM layout has stabilized
   window.addEventListener('DOMContentLoaded', () => {
     setupDailyStage();
     saveAndRender();
