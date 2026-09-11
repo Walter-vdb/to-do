@@ -199,6 +199,7 @@
     .time-dropdown-row {
       display: none;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
       padding-top: 4px;
       font-size: 0.85rem;
@@ -217,6 +218,15 @@
       font-size: 0.85rem;
       outline: none;
       background: white;
+    }
+
+    .recurring-toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      user-select: none;
     }
 
     .task-list {
@@ -296,6 +306,12 @@
       gap: 2px;
     }
 
+    .task-title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .task-title {
       font-size: 0.95rem;
       font-weight: 500;
@@ -305,6 +321,16 @@
     .task-item.completed .task-title {
       text-decoration: line-through;
       color: var(--text-muted);
+    }
+
+    .recurring-tag {
+      font-size: 0.7rem;
+      background: #E0F2FE;
+      color: #0284C7;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-weight: 600;
+      white-space: nowrap;
     }
 
     .task-time-badge {
@@ -478,8 +504,14 @@
         </div>
         
         <div class="time-dropdown-row" id="timeDropdownRow">
-          <span>⏰ Due time (optional):</span>
-          <input type="time" id="taskTimeInput" />
+          <div>
+            <span style="margin-right: 4px;">⏰ Time:</span>
+            <input type="time" id="taskTimeInput" />
+          </div>
+          <label class="recurring-toggle-label">
+            <input type="checkbox" id="taskRecurringInput" />
+            <span>🔁 Repeat Daily</span>
+          </label>
         </div>
       </form>
 
@@ -521,6 +553,7 @@
   const addTaskForm = document.getElementById('addTaskForm');
   const taskInput = document.getElementById('taskInput');
   const taskTimeInput = document.getElementById('taskTimeInput');
+  const taskRecurringInput = document.getElementById('taskRecurringInput');
   const timeDropdownRow = document.getElementById('timeDropdownRow');
   const progressText = document.getElementById('progressText');
   const victoryCard = document.getElementById('victoryCard');
@@ -558,12 +591,29 @@
   }
 
   const defaultTasks = [
-    { id: 1, text: "Review Q3 cycling deck", time: "12:00", completed: false },
-    { id: 2, text: "Sync with logistics team", time: "", completed: false },
-    { id: 3, text: "Test new accessories lineup", time: "15:30", completed: false }
+    { id: 1, text: "Review Q3 cycling deck", time: "12:00", recurring: false, completed: false },
+    { id: 2, text: "Daily morning team sync", time: "09:00", recurring: true, completed: false },
+    { id: 3, text: "Test new accessories lineup", time: "15:30", recurring: false, completed: false }
   ];
 
   let tasks = JSON.parse(localStorage.getItem('woom_tasks')) || defaultTasks;
+
+  // Check and run midnight task cleanup
+  function checkMidnightReset() {
+    const todayString = new Date().toDateString();
+    const lastSavedDate = localStorage.getItem('woom_last_date');
+
+    if (lastSavedDate && lastSavedDate !== todayString) {
+      // Midnight has passed! Keep recurring tasks (uncompleted), delete completed/non-recurring
+      tasks = tasks
+        .filter(task => task.recurring)
+        .map(task => ({ ...task, completed: false }));
+
+      saveAndRender();
+    }
+    
+    localStorage.setItem('woom_last_date', todayString);
+  }
 
   notesArea.value = localStorage.getItem('woom_notes') || '';
   notesArea.addEventListener('input', () => {
@@ -589,7 +639,6 @@
     }
   }
 
-  // Helper function to format overdue time cleanly (e.g., "15m", "1h 15m", "2h")
   function formatOverdueText(minutes) {
     const totalMinutes = Math.floor(minutes);
     if (totalMinutes < 60) {
@@ -668,7 +717,10 @@
         <div class="task-left" onclick="toggleTask(${task.id})">
           <div class="custom-checkbox"></div>
           <div class="task-info">
-            <span class="task-title">${escapeHtml(task.text)}</span>
+            <div class="task-title-row">
+              <span class="task-title">${escapeHtml(task.text)}</span>
+              ${task.recurring ? `<span class="recurring-tag">🔁 Daily</span>` : ''}
+            </div>
             ${timeLabel ? `<span class="task-time-badge">${timeLabel}</span>` : ''}
           </div>
         </div>
@@ -742,11 +794,13 @@
     e.preventDefault();
     const text = taskInput.value.trim();
     const time = taskTimeInput.value;
+    const recurring = taskRecurringInput.checked;
     
     if (text) {
-      tasks.push({ id: Date.now(), text, time, completed: false });
+      tasks.push({ id: Date.now(), text, time, recurring, completed: false });
       taskInput.value = '';
       taskTimeInput.value = '';
+      taskRecurringInput.checked = false;
       timeDropdownRow.classList.remove('open');
       saveAndRender();
     }
@@ -792,10 +846,13 @@
   }
 
   window.addEventListener('DOMContentLoaded', () => {
+    checkMidnightReset();
     setupDailyStage();
     saveAndRender();
     
+    // Check midnight reset & task urgency status every 15 seconds
     setInterval(() => {
+      checkMidnightReset();
       renderTasksWithAnimation();
     }, 15000);
   });
