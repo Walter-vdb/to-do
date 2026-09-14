@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tour de Workday</title>
+
+  <!-- Red Task List Favicon (Built directly into code) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='20' y='15' width='60' height='75' rx='8' fill='none' stroke='%23E30613' stroke-width='8'/><rect x='35' y='8' width='30' height='12' rx='4' fill='%23E30613'/><circle cx='50' cy='14' r='3' fill='white'/><line x1='35' y1='38' x2='65' y2='38' stroke='%23E30613' stroke-width='6' stroke-linecap='round'/><line x1='35' y1='52' x2='65' y2='52' stroke='%23E30613' stroke-width='6' stroke-linecap='round'/><rect x='33' y='64' width='14' height='14' rx='3' fill='none' stroke='%23E30613' stroke-width='4'/><path d='M30 70 L38 78 L55 60' fill='none' stroke='%23E30613' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+
   <style>
     :root {
       --woom-red: #E30613;
@@ -570,7 +574,6 @@
 </div>
 
 <script>
-  // Explicitly mapped day-indexed routes (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
   const stageRoutes = [
     { day: "Sunday", name: "Sunday Stage: Sunday Scenic Cruise", path: "M 30,110 C 120,30 280,180 370,110" },
     { day: "Monday", name: "Monday Stage: The Weekly Kickoff S-Curve", path: "M 30,180 C 120,180 120,30 200,110 C 280,180 280,30 370,30" },
@@ -581,7 +584,6 @@
     { day: "Saturday", name: "Saturday Stage: Weekend Trail Adventure", path: "M 30,130 Q 120,200 200,110 T 370,80" }
   ];
 
-  // Safety fallback ensures stageRoutes[todayIndex] always finds a valid stage
   const todayIndex = new Date().getDay();
   const currentStage = stageRoutes[todayIndex] || stageRoutes[1];
 
