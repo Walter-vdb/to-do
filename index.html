@@ -229,13 +229,41 @@
       user-select: none;
     }
 
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--woom-gray-bg);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .filter-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn.active {
+      background: var(--woom-card-bg);
+      color: var(--text-main);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
     .task-list {
       list-style: none;
       position: relative;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      max-height: 320px;
+      max-height: 280px;
       overflow-y: auto;
       overflow-x: hidden;
     }
@@ -362,6 +390,13 @@
 
     .delete-btn:hover {
       opacity: 1;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
     }
 
     .victory-card {
@@ -515,6 +550,12 @@
         </div>
       </form>
 
+      <div class="filter-tabs">
+        <button class="filter-btn active" onclick="setFilter('all')" id="filterBtnAll">All</button>
+        <button class="filter-btn" onclick="setFilter('active')" id="filterBtnActive">Active</button>
+        <button class="filter-btn" onclick="setFilter('completed')" id="filterBtnCompleted">Completed</button>
+      </div>
+
       <ul class="task-list" id="taskList"></ul>
     </div>
   </div>
@@ -529,6 +570,7 @@
 </div>
 
 <script>
+  // Explicitly mapped day-indexed routes (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
   const stageRoutes = [
     { day: "Sunday", name: "Sunday Stage: Sunday Scenic Cruise", path: "M 30,110 C 120,30 280,180 370,110" },
     { day: "Monday", name: "Monday Stage: The Weekly Kickoff S-Curve", path: "M 30,180 C 120,180 120,30 200,110 C 280,180 280,30 370,30" },
@@ -539,8 +581,9 @@
     { day: "Saturday", name: "Saturday Stage: Weekend Trail Adventure", path: "M 30,130 Q 120,200 200,110 T 370,80" }
   ];
 
+  // Safety fallback ensures stageRoutes[todayIndex] always finds a valid stage
   const todayIndex = new Date().getDay();
-  const currentStage = stageRoutes[todayIndex];
+  const currentStage = stageRoutes[todayIndex] || stageRoutes[1];
 
   const roadPath = document.getElementById('roadPath');
   const roadLine = document.getElementById('roadLine');
@@ -560,6 +603,7 @@
   const notesArea = document.getElementById('notesArea');
   const mapContainer = document.getElementById('mapContainer');
 
+  let currentFilter = 'all';
   let hasTriggeredVictory = false;
 
   taskInput.addEventListener('focus', () => {
@@ -572,22 +616,37 @@
     }
   });
 
+  function setFilter(filter) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`filterBtn${filter.charAt(0).toUpperCase() + filter.slice(1)}`).classList.add('active');
+    renderTasksWithAnimation();
+  }
+
   function setupDailyStage() {
+    if (!currentStage) return;
+    
     stageTitle.textContent = currentStage.name;
     roadPath.setAttribute('d', currentStage.path);
     roadLine.setAttribute('d', currentStage.path);
 
-    const totalLen = roadPath.getTotalLength();
-    const startPt = roadPath.getPointAtLength(0);
-    const finishPt = roadPath.getPointAtLength(totalLen);
+    try {
+      const totalLen = roadPath.getTotalLength();
+      if (totalLen > 0) {
+        const startPt = roadPath.getPointAtLength(0);
+        const finishPt = roadPath.getPointAtLength(totalLen);
 
-    startCircle.setAttribute('cx', startPt.x);
-    startCircle.setAttribute('cy', startPt.y);
-    startText.setAttribute('x', startPt.x);
-    startText.setAttribute('y', Math.min(210, startPt.y + 20));
+        startCircle.setAttribute('cx', startPt.x);
+        startCircle.setAttribute('cy', startPt.y);
+        startText.setAttribute('x', startPt.x);
+        startText.setAttribute('y', Math.min(210, startPt.y + 20));
 
-    finishCircle.setAttribute('cx', finishPt.x);
-    finishCircle.setAttribute('cy', finishPt.y);
+        finishCircle.setAttribute('cx', finishPt.x);
+        finishCircle.setAttribute('cy', finishPt.y);
+      }
+    } catch (e) {
+      console.log('DOM length calculation deferred');
+    }
   }
 
   const defaultTasks = [
@@ -598,13 +657,11 @@
 
   let tasks = JSON.parse(localStorage.getItem('woom_tasks')) || defaultTasks;
 
-  // Check and run midnight task cleanup
   function checkMidnightReset() {
     const todayString = new Date().toDateString();
     const lastSavedDate = localStorage.getItem('woom_last_date');
 
     if (lastSavedDate && lastSavedDate !== todayString) {
-      // Midnight has passed! Keep recurring tasks (uncompleted), delete completed/non-recurring
       tasks = tasks
         .filter(task => task.recurring)
         .map(task => ({ ...task, completed: false }));
@@ -686,49 +743,63 @@
       return 0;
     });
 
-    taskListEl.innerHTML = '';
-    sortedTasks.forEach(task => {
-      const urgency = getTaskUrgency(task);
-      const li = document.createElement('li');
-      
-      let statusClass = '';
-      let timeLabel = '';
+    const filteredTasks = sortedTasks.filter(task => {
+      if (currentFilter === 'active') return !task.completed;
+      if (currentFilter === 'completed') return task.completed;
+      return true;
+    });
 
-      if (task.time && !task.completed) {
-        if (urgency.status === 'overdue') {
-          statusClass = 'status-overdue';
-          const formattedTime = formatOverdueText(urgency.minutesDiff);
-          timeLabel = `⚠️ Overdue by ${formattedTime} (${task.time})`;
-        } else if (urgency.status === 'due-soon') {
-          statusClass = 'status-duesoon';
-          const minsLeft = Math.abs(Math.floor(urgency.minutesDiff));
-          timeLabel = `⏰ Due soon in ${minsLeft}m (${task.time})`;
-        } else {
+    taskListEl.innerHTML = '';
+
+    if (filteredTasks.length === 0) {
+      const emptyLi = document.createElement('li');
+      emptyLi.className = 'empty-state';
+      emptyLi.textContent = currentFilter === 'completed' ? 'No completed tasks yet!' : 'No active tasks. Good riding!';
+      taskListEl.appendChild(emptyLi);
+    } else {
+      filteredTasks.forEach(task => {
+        const urgency = getTaskUrgency(task);
+        const li = document.createElement('li');
+        
+        let statusClass = '';
+        let timeLabel = '';
+
+        if (task.time && !task.completed) {
+          if (urgency.status === 'overdue') {
+            statusClass = 'status-overdue';
+            const formattedTime = formatOverdueText(urgency.minutesDiff);
+            timeLabel = `⚠️ Overdue by ${formattedTime} (${task.time})`;
+          } else if (urgency.status === 'due-soon') {
+            statusClass = 'status-duesoon';
+            const minsLeft = Math.abs(Math.floor(urgency.minutesDiff));
+            timeLabel = `⏰ Due soon in ${minsLeft}m (${task.time})`;
+          } else {
+            timeLabel = `⏰ Due at ${task.time}`;
+          }
+        } else if (task.time && task.completed) {
           timeLabel = `⏰ Due at ${task.time}`;
         }
-      } else if (task.time && task.completed) {
-        timeLabel = `⏰ Due at ${task.time}`;
-      }
 
-      li.className = `task-item ${task.completed ? 'completed' : ''} ${statusClass}`;
-      li.dataset.id = task.id;
+        li.className = `task-item ${task.completed ? 'completed' : ''} ${statusClass}`;
+        li.dataset.id = task.id;
 
-      li.innerHTML = `
-        <div class="task-left" onclick="toggleTask(${task.id})">
-          <div class="custom-checkbox"></div>
-          <div class="task-info">
-            <div class="task-title-row">
-              <span class="task-title">${escapeHtml(task.text)}</span>
-              ${task.recurring ? `<span class="recurring-tag">🔁 Daily</span>` : ''}
+        li.innerHTML = `
+          <div class="task-left" onclick="toggleTask(${task.id})">
+            <div class="custom-checkbox"></div>
+            <div class="task-info">
+              <div class="task-title-row">
+                <span class="task-title">${escapeHtml(task.text)}</span>
+                ${task.recurring ? `<span class="recurring-tag">🔁 Daily</span>` : ''}
+              </div>
+              ${timeLabel ? `<span class="task-time-badge">${timeLabel}</span>` : ''}
             </div>
-            ${timeLabel ? `<span class="task-time-badge">${timeLabel}</span>` : ''}
           </div>
-        </div>
-        <button class="delete-btn" onclick="deleteTask(${task.id})" title="Delete task">✕</button>
-      `;
-      
-      taskListEl.appendChild(li);
-    });
+          <button class="delete-btn" onclick="deleteTask(${task.id})" title="Delete task">✕</button>
+        `;
+        
+        taskListEl.appendChild(li);
+      });
+    }
 
     Array.from(taskListEl.children).forEach(el => {
       const id = el.dataset.id;
@@ -807,36 +878,41 @@
   });
 
   function updateBikePosition() {
-    const total = tasks.length;
-    const completed = tasks.filter(t => t.completed).length;
-    const percentage = total === 0 ? 0 : completed / total;
+    try {
+      const total = tasks.length;
+      const completed = tasks.filter(t => t.completed).length;
+      const percentage = total === 0 ? 0 : completed / total;
 
-    const pathLength = roadPath.getTotalLength();
-    const targetLength = pathLength * percentage;
-    
-    const pt = roadPath.getPointAtLength(targetLength);
+      const pathLength = roadPath.getTotalLength();
+      if (!pathLength) return;
 
-    const sampleAhead = Math.min(pathLength, targetLength + 1);
-    const sampleBehind = Math.max(0, targetLength - 1);
-    const pt1 = roadPath.getPointAtLength(sampleBehind);
-    const pt2 = roadPath.getPointAtLength(sampleAhead);
+      const targetLength = pathLength * percentage;
+      const pt = roadPath.getPointAtLength(targetLength);
 
-    const dx = pt2.x - pt1.x;
-    const dy = pt2.y - pt1.y;
-    let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      const sampleAhead = Math.min(pathLength, targetLength + 1);
+      const sampleBehind = Math.max(0, targetLength - 1);
+      const pt1 = roadPath.getPointAtLength(sampleBehind);
+      const pt2 = roadPath.getPointAtLength(sampleAhead);
 
-    const svgEl = document.querySelector('.map-svg');
-    const rect = svgEl.getBoundingClientRect();
-    
-    const scaleX = rect.width / 400;
-    const scaleY = rect.height / 220;
+      const dx = pt2.x - pt1.x;
+      const dy = pt2.y - pt1.y;
+      let angle = Math.atan2(dy, dx) * (180 / Math.PI);
 
-    const pixelX = pt.x * scaleX;
-    const pixelY = pt.y * scaleY;
+      const svgEl = document.querySelector('.map-svg');
+      const rect = svgEl.getBoundingClientRect();
+      
+      const scaleX = rect.width / 400;
+      const scaleY = rect.height / 220;
 
-    bikeMarker.style.left = `${pixelX}px`;
-    bikeMarker.style.top = `${pixelY}px`;
-    bikeMarker.style.transform = `rotate(${angle}deg)`;
+      const pixelX = pt.x * scaleX;
+      const pixelY = pt.y * scaleY;
+
+      bikeMarker.style.left = `${pixelX}px`;
+      bikeMarker.style.top = `${pixelY}px`;
+      bikeMarker.style.transform = `rotate(${angle}deg)`;
+    } catch (e) {
+      console.log('Bike calculation deferred');
+    }
   }
 
   function escapeHtml(text) {
@@ -850,7 +926,6 @@
     setupDailyStage();
     saveAndRender();
     
-    // Check midnight reset & task urgency status every 15 seconds
     setInterval(() => {
       checkMidnightReset();
       renderTasksWithAnimation();
